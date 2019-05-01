@@ -53,8 +53,8 @@ Update the model version record in postgres after successful write to s3.
 
 ## Downloading a Model Version
 Retrieve a model version from s3. (Optionally) unzip archive once downloaded.
-Likely need a new endpoint for this to supply the user with the ability to pass in their model version (`version`) or default to latest.
+Likely need a new endpoint for this to supply the user with the ability to default to latest.
 
 - Request: `GET`
-- Path: `/organizations/<org-id>/app/<app-name-or-id>/models/<model-name-or-id>/model_versions/<model_version_id>/`
+- Path: `/organizations/<org-id>/app/<app-name-or-id>/models/<model-name-or-id>/model_versions/<version>/`
 - Response: 200 if successful and file will download

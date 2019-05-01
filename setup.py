@@ -7,8 +7,8 @@ REQS = """"""
 VERSION = """"""
 
 setup(
-  name='skafossdk',
-  packages=['skafossdk'],
+  name='skafos',
+  packages=['skafos'],
   version=VERSION,
   license='MIT',  # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description=DESCRIPTION,

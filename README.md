@@ -3,17 +3,7 @@
 - Staging: `https://api.skafos.wtf/v2`
 - Production: `https://api.skafos.ai/v2`
 
-All endpoints will need to be adjusted to use API-token authentication instead of organization id, etc.
-
-## Create a Model in an App
-May not do this in the Python SDK. Likely out of scope. Create a new model.
-Think of this as a "bin" for models of a particular type.
-
-- Request: `POST`
-- Path: `/organizations/<org-name-or-id>/apps/<app-name-or-id>/models`
-- Body: `{"name": "", "description": ""}`
-- Response: `{"updated_at": "", "public": "", "name": "", "inserted_at": "", "id": "", "description": "", "app_id": ""}`
-
+All endpoints use `SKAFOS_API_TOKEN` supplied in the header for authentication.
 
 ## Upload Model Versions
 Upload a file, or list of files, compress them to a zip, then hit 2 endpoints:
@@ -53,8 +43,8 @@ Update the model version record in postgres after successful write to s3.
 
 ## Downloading a Model Version
 Retrieve a model version from s3. (Optionally) unzip archive once downloaded.
-Likely need a new endpoint for this to supply the user with the ability to default to latest.
+Version not required. It defaults to latest if you don't supply that.
 
 - Request: `GET`
-- Path: `/organizations/<org-id>/app/<app-name-or-id>/models/<model-name-or-id>/model_versions/<version>/`
+- Path: `/organizations/<org-id>/app/<app-name-or-id>/models/<model-name-or-id>?version=<version>`
 - Response: 200 if successful and file will download

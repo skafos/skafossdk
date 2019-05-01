@@ -8,48 +8,56 @@ learning models to the Skafos platform.
 import os
 import json
 import requests
-from .logger import get_logger
+import logging
+from .exceptions import *
 
-log = get_logger() # TODO
 API_BASE_URL = "https://api.skafos.wtf/v2"  # production: api.skafos.ai/v2
-
-
-class MissingParamError(Exception):
-    # TODO
-    pass
+logger = logging.getLogger(name="skafos")
 
 
 def get_version():
-    # TODO
-    pass
+    """Returns the current version of the Skafos SDK in use."""
+    with open(os.path.join(os.path.dirname(__file__),  'VERSION')) as version_file:
+        return version_file.read().strip()
 
 
 def _generate_required_params(args):
-    # TODO is this right?
+    # Generate the parameters to build a Skafos request/endpoint
+    params = {}
+
     # Check for api token first
     if 'skafos_api_token' in args:
-        token = args['skafos_api_token']
+        params['skafos_api_token'] = args['skafos_api_token']
     else:
-        token = os.getenv('SKAFOS_API_TOKEN')
-    if not token:
-        raise MissingParamError
+        params['skafos_api_token'] = os.getenv('SKAFOS_API_TOKEN')
+    if not params['skafos_api_token']:
+        raise InvalidTokenError("Missing Skafos API Token")
 
-    # Grab app name and model name
-    if ('model_name' in args) and ('app_name' in args):
-        model_name = args['model_name']
-        app_name = args['app_name']
+    # Grab org name
+    if 'org_name' in args:
+        params['org_name'] = args['org_name']
     else:
-        model_name = os.getenv('SKAFOS_MODEL_NAME')
-        app_name = os.getenv('SKAFOS_APP_NAME')
+        params['org_name'] = os.getenv('SKAFOS_ORG_NAME')
+    if not params['org_name']:
+        raise MissingParamError("Missing Skafos Organization Name")
 
-    if not model_name or not app_name:
-        raise MissingParamError
+    # Grab app name
+    if 'app_name' in args:
+        params['app_name'] = args['app_name']
+    else:
+        params['app_name'] = os.getenv('SKAFOS_APP_NAME')
+    if not params['app_name']:
+        raise MissingParamError("Missing Skafos App Name")
 
-    return {
-        'skafos_api_token': token,
-        'model_name': model_name,
-        'app_name': app_name
-    }
+    # Grab model name
+    if 'model_name' in args:
+        params['model_name'] = args['model_name']
+    else:
+        params['model_name'] = os.getenv('SKAFOS_MODEL_NAME')
+    if not params['model_name']:
+        raise MissingParamError("Missing Skafos Model Name")
+
+    return params
 
 
 def _call_skafos_api(method, endpoint, payload, head=None):
@@ -79,10 +87,10 @@ def upload_model_version(**kwargs):
     Upload a model version (a zipped archive) for a specific app and model directly to Skafos. Optionally zip files upon
     upload, removing that burden from the user. Once model has been uploaded to storage, return a successful response.
     :param skafos_api_token:
-    :param model_name:
+    :param org_name:
     :param app_name:
+    :param model_name:
     :param files:
-    :param compress:
     :return:
     """
     # Get required params
@@ -101,7 +109,11 @@ def upload_model_version(**kwargs):
         # fail here?
 
     # Create endpoint
-    endpoint = f"/sdk/{params['skafos_api_token']}/app/{params['app_name']}/models/{params['model_name']}/"
+    if 'org_name' in params:
+        endpoint = f"/organizations/{params['org_name']}/app/{params['app_name']}/models/{params['model_name']}/"
+    else:
+        # Default to user org
+        endpoint = f"/app/{params['app_name']}/models/{params['model_name']}/"
 
     # Make request - handle errors
     model_version_res = _call_skafos_api(
@@ -129,17 +141,15 @@ def upload_model_version(**kwargs):
     return final_model_version_res
 
 
-def get_model_version(**kwargs):
-    # TODO make better doc string
+def fetch_model_version(**kwargs):
     """
-    Download a model version (a zipped archive) for a specific app and model directly from Skafos. Optionally unzip the
-    archive on download, removing that burden from the user.
+    Download a model version (a zipped archive) for a specific app and model directly from Skafos.
+
     :param skafos_api_token:
-    :param model_name:
+    :param org_name:
     :param app_name:
-    :param decompress:
+    :param model_name:
     :return:
     """
     params = _generate_required_params(kwargs)
     # TODO like everything else
-

@@ -1,10 +1,13 @@
 from distutils.core import setup
 
-DESCRIPTION = """"""
+with open('skafos/DESCRIPTION', 'r') as d:
+  DESCRIPTION = d.read().strip()
 
-REQS = """"""
+with open('skafos/VERSION', 'r') as v:
+    VERSION = v.read().strip()
 
-VERSION = """"""
+with open('requirements.txt', 'r') as r:
+    REQS = [req.replace('\n', '') for req in r.readlines()]
 
 setup(
   name='skafos',

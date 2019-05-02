@@ -91,6 +91,28 @@ def _update_model_version_record(endpoint, payload):
         raise UploadFailedError(f"Failed to create new model version: {r.status_code}")
 
 
+def _http_request(method, url, api_token, payload=None):
+    header = {"X-API-KEY": api_token}
+    if method == "GET":
+        r = requests.get(url, header=header, data=payload)
+    elif method == "POST":
+        r = requests.post(url, header=header, data=payload)
+    elif method == "PUT":
+        header["Content-Type"] = "application/octet-stream"
+        r = requests.put(url, header=header, data=payload)
+    elif method == "PATCH":
+        r = requests.patch(url, header=header, data=payload)
+    else:
+        raise requests.exceptions.HTTPError(f"Invalid request method: {method}")
+
+    if r.ok:
+        if method in ("GET", "POST"):
+            res = r.json()
+        elif
+
+    return {}
+
+
 # TODO handle exceptions
 def upload_model_version(files, description=None, **kwargs) -> dict:
     #TODO clean up the docstring and make consistent
@@ -186,6 +208,7 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
     # Return response to the user
     return final_model_version_res
 
+
 # TODO what does this return?
 def fetch_model_version(version=None, **kwargs):
     #TODO clean up the docstring and make consistent
@@ -208,30 +231,69 @@ def fetch_model_version(version=None, **kwargs):
 
 def summary(skafos_api_token=None) -> dict:
     """
-    Returns all Skafos organizations, apps, and models that the provided
-    API token has access to.
+    Returns all Skafos organizations, apps, and models that the provided API token has access to.
 
     :param skafos_api_token:
+        Skafos API Token associated with your user account. Get one at https://skafos.ai.
     :type skafos_api_token:
-    :returns:
-
+        str or None
+    :return:
+        Dictionary of all organizations, apps, and models, this account has access to.
     """
+    summary_res = {}
 
-    # Check for token in function, then env, then raise error if not there
-    # Do stuff and make request
-    # Return python dictionary to the user
+    # Check for api token first
+    if not skafos_api_token:
+        skafos_api_token = os.getenv('SKAFOS_API_TOKEN')
+    if not skafos_api_token:
+        raise InvalidTokenError("Missing Skafos API Token")
 
-
-    pass
+    # Prepare requests
+    header = {"X-API-Key": skafos_api_token}
+    method = "GET"
+    endpoint = "/organizations"
+    res = _http_request(
+        method = method,
+        url = API_BASE_URL + endpoint,
+        header = header
+    )
+    for org in res:
+        summary_res[org["name"]] = {}
+        endpoint = f"/organizations/{org['name']}/apps"
+        res = _http_request(
+            method= method,
+            url = API_BASE_URL + endpoint,
+            header = header
+        )
+        for app in res:
+            summary_res[org["name"]][app["name"]] = []
+            endpoint = f"/organizations/{org['name']}/apps/{app['name']}/models"
+            res = _http_request(
+                method = method,
+                url = API_BASE_URL + endpoint,
+                header = header
+            )
+            for model in res:
+                model_meta_data = {k: model[k] for k in model.keys() & {'id, ''name', 'updated_at', 'public'}}
+                summary_res[org["name"]][app["name"]].append(model_meta_data)
+    # Print out and return the summary response to the user
+    print(summary_res)
+    return summary_res
 
 
 def list_model_versions(**kwargs) -> dict:
     """
     Returns a list of all saved model versions based on API token, organization,
     app, and model names.
-
     """
-
-    pass
+    params = _generate_required_params(kwargs)
+    endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/model_versions?=order_by=versions%3Adesc"
+    res = _http_request(
+        method = "GET",
+        url = API_BASE_URL + endpoint,
+        api_token = params["skafos_api_token"]
+    )
+    print(res)
+    return res
 
     

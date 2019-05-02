@@ -12,7 +12,7 @@ import requests
 import logging
 from .exceptions import *
 
-API_BASE_URL = "https://api.skafos.wtf/v2"  # production: api.skafos.ai/v2
+API_BASE_URL = "https://api.skafos.wtf/v2"  # production: https://api.skafos.ai/v2
 logger = logging.getLogger(name="skafos")
 
 
@@ -39,8 +39,8 @@ def _generate_required_params(args):
         params['org_name'] = args['org_name']
     else:
         params['org_name'] = os.getenv('SKAFOS_ORG_NAME')
-    if not params['org_name']:
-        raise MissingParamError("Missing Skafos Organization Name")
+    #if not params['org_name']:
+    #    raise MissingParamError("Missing Skafos Organization Name")
 
     # Grab app name
     if 'app_name' in args:
@@ -60,7 +60,7 @@ def _generate_required_params(args):
 
     return params
 
-
+# TODO refactor into a network handler method: def _http_request():
 def _model_version_record(endpoint, payload):
     # Create model version record in the BE
     url = API_BASE_URL + endpoint
@@ -92,7 +92,7 @@ def _update_model_version_record(endpoint, payload):
 
 
 # TODO handle exceptions
-def upload_model_version(files, description=None, **kwargs):
+def upload_model_version(files, description=None, **kwargs) -> dict:
     #TODO clean up the docstring and make consistent
     """
     Uploads a model version (a zipped archive) for a specific app and model directly to Skafos. Zips files upon
@@ -123,6 +123,7 @@ def upload_model_version(files, description=None, **kwargs):
     """
     # Get required params
     params = _generate_required_params(kwargs)
+    header = {"X-API-KEY": params["skafos_api_token"]}
 
     # Unzip files
     filelist = None
@@ -131,7 +132,7 @@ def upload_model_version(files, description=None, **kwargs):
     elif isinstance(files, str):
         filelist = [files]
 
-    # Create zipped filename
+    # Create zipped filename TODO check with kevin about how to use right zipfile name here
     zip_name = params['model_name'] if params['model_name'][-4:] == ".zip" else f"{params['model_name']}.zip"
     with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as skazip:
         for zfile in filelist:
@@ -146,40 +147,46 @@ def upload_model_version(files, description=None, **kwargs):
     if 'org_name' in params:
         endpoint = f"/organizations/{params['org_name']}/app/{params['app_name']}/models/{params['model_name']}/"
     else:
-        # Default to user org
+        # Default to user org - WHERE does the error come back if they have more than one org?
         endpoint = f"/app/{params['app_name']}/models/{params['model_name']}/"
 
     # Create request body
-    body = {"filename": zip_name}
+    body = {"file_name": zip_name}
     if description and isinstance(description, str):
         body["description"] = description
+        # TODO check that description is less than 255 charvar
+        # TODO what to do if not string????
 
-    # Make request
+    # Make request TODO update to use http_request handler function
     model_version_res = _model_version_record(
         endpoint=endpoint,
-        payload=json.dumps({})
+        payload=json.dumps({}),
+        header=header
     )
 
     # Upload model to storage
-    header = {"Content-Type": "application/octet-stream"}
-    body = {} # TODO
+    header["Content-Type"] = "application/octet-stream"
+    body = {"file": ""} # TODO need to figure out how to put the actual zip file in this (byte stream)
     upload_res = _upload(
         url=model_version_res['presigned_url'],
         payload=json.dumps({body}),
         header=header
     )
 
-    # If upload succeeds, update db
+    # If upload succeeds, update db TODO handle success/failure from previous call
     model_version_endpoint = endpoint + f"model_versions/{model_version_res['model_version_id']}"
+    _ = header.pop("Content-Type")
     data = {"filepath": model_version_res['filepath']}
     final_model_version_res = _update_model_version_record(
         endpoint=model_version_endpoint,
-        payload=json.dumps({data})
+        payload=json.dumps({data}),
+        header=header
     )
+
     # Return response to the user
     return final_model_version_res
 
-
+# TODO what does this return?
 def fetch_model_version(version=None, **kwargs):
     #TODO clean up the docstring and make consistent
 
@@ -196,3 +203,35 @@ def fetch_model_version(version=None, **kwargs):
     params = _generate_required_params(kwargs)
 
     # TODO like everything else
+    pass
+
+
+def summary(skafos_api_token=None) -> dict:
+    """
+    Returns all Skafos organizations, apps, and models that the provided
+    API token has access to.
+
+    :param skafos_api_token:
+    :type skafos_api_token:
+    :returns:
+
+    """
+
+    # Check for token in function, then env, then raise error if not there
+    # Do stuff and make request
+    # Return python dictionary to the user
+
+
+    pass
+
+
+def list_model_versions(**kwargs) -> dict:
+    """
+    Returns a list of all saved model versions based on API token, organization,
+    app, and model names.
+
+    """
+
+    pass
+
+    

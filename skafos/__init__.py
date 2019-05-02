@@ -1,2 +1,2 @@
-from .skafos import *
+from .utils import *
 from .exceptions import *

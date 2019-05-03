@@ -13,6 +13,8 @@ import logging
 from .exceptions import *
 
 API_BASE_URL = "https://api.skafos.wtf/v2"  # production: https://api.skafos.ai/v2
+HTTP_VERBS = ["GET", "POST", "PUT", "PATCH"]
+DEFAULT_TIMEOUT = 120
 logger = logging.getLogger(name="skafos")
 
 
@@ -60,57 +62,42 @@ def _generate_required_params(args):
 
     return params
 
-# TODO refactor into a network handler method: def _http_request():
-def _model_version_record(endpoint, payload):
-    # Create model version record in the BE
-    url = API_BASE_URL + endpoint
-    r = requests.post(url, data=payload)
-    if r.status_code == requests.codes.ok:
-        res = r.json()
-        return res
-    else:
-        raise UploadFailedError(f"Failed to create new model version: {r.status_code}")
 
+def _http_request(method, url, api_token, timeout=None, payload=None):
+    # Check that we ae using an appropriate request type
+    if method not in HTTP_VERBS:
+        raise requests.exceptions.HTTPError("Must use an appropriate HTTP verb")
 
-def _upload(url, payload, header):
-    # Put model object to presigned url
-    r = requests.put(url, data=payload, headers=header)
-    if r.status_code == 200:
-        return r.status_code
-    else:
-        raise UploadFailedError(f"Model version upload failed: {r.status_code}")
-
-
-def _update_model_version_record(endpoint, payload):
-    url = API_BASE_URL + endpoint
-    r = requests.patch(url, data=payload)
-    if r.status_code == requests.codes.ok:
-        res = r.json()
-        return res
-    else:
-        raise UploadFailedError(f"Failed to create new model version: {r.status_code}")
-
-
-def _http_request(method, url, api_token, payload=None):
+    # Prepare headers and timeout
     header = {"X-API-KEY": api_token}
-    if method == "GET":
-        r = requests.get(url, header=header, data=payload)
-    elif method == "POST":
-        r = requests.post(url, header=header, data=payload)
-    elif method == "PUT":
+    if method == "PUT":
         header["Content-Type"] = "application/octet-stream"
-        r = requests.put(url, header=header, data=payload)
-    elif method == "PATCH":
-        r = requests.patch(url, header=header, data=payload)
+    if not timeout:
+        timeout = DEFAULT_TIMEOUT
+
+    try:
+        # Prepare request object and send it
+        req = requests.Request(method, url, headers=header, data=payload)
+        r = req.prepare()
+        with requests.Session() as s:
+            logger.debug(f"Sending prepared request with url: {url}")
+            response = s.send(r, timeout=timeout)
+            response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        logger.debug(f"HTTP Error: {err}")
+    except requests.exceptions.ConnectionError as err:
+        logger.debug(f"Error connecting to server: {err}")
+    except requests.exceptions.Timeout:
+        logger.debug(f"Request timed out at {timeout} seconds, consider increasing timeout")
+    except requests.exceptions.RequestException as err:
+        logger.debug(f"Oops, got some other error: {err}")
+
+    # Return response
+    logger.debug("Got a 200 from the server")
+    if method == "PUT":
+        return response.status_code
     else:
-        raise requests.exceptions.HTTPError(f"Invalid request method: {method}")
-
-    if r.ok:
-        if method in ("GET", "POST"):
-            res = r.json()
-        elif
-
-    return {}
+        return response.json()
 
 
 # TODO handle exceptions

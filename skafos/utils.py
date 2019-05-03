@@ -42,7 +42,7 @@ def _generate_required_params(args):
     else:
         params['org_name'] = os.getenv('SKAFOS_ORG_NAME')
     #if not params['org_name']:
-    #    raise MissingParamError("Missing Skafos Organization Name")
+    #    raise InvalidParamError("Missing Skafos Organization Name")
 
     # Grab app name
     if 'app_name' in args:
@@ -50,7 +50,7 @@ def _generate_required_params(args):
     else:
         params['app_name'] = os.getenv('SKAFOS_APP_NAME')
     if not params['app_name']:
-        raise MissingParamError("Missing Skafos App Name")
+        raise InvalidParamError("Missing Skafos App Name")
 
     # Grab model name
     if 'model_name' in args:
@@ -58,7 +58,7 @@ def _generate_required_params(args):
     else:
         params['model_name'] = os.getenv('SKAFOS_MODEL_NAME')
     if not params['model_name']:
-        raise MissingParamError("Missing Skafos Model Name")
+        raise InvalidParamError("Missing Skafos Model Name")
 
     return params
 
@@ -69,7 +69,7 @@ def _http_request(method, url, api_token, timeout=None, payload=None):
         raise requests.exceptions.HTTPError("Must use an appropriate HTTP verb")
 
     # Prepare headers and timeout
-    header = {"X-API-KEY": api_token}
+    header = {"X-API-TOKEN": api_token, "Content-Type": "application/json"}
     if method == "PUT":
         header["Content-Type"] = "application/octet-stream"
     if not timeout:
@@ -85,12 +85,23 @@ def _http_request(method, url, api_token, timeout=None, payload=None):
             response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         logger.debug(f"HTTP Error: {err}")
+        if response.status_code == 401:
+            # We know what it is - raise proper exception to user
+            raise InvalidTokenError("Invalid Skafos API Token")
+        elif response.status_code == 404:
+            # We know what it is - raise proper exception to user
+            raise InvalidParamError("Invalid param passed to function. Check your org name, app name, or model name")
+        else:
+            raise
     except requests.exceptions.ConnectionError as err:
         logger.debug(f"Error connecting to server: {err}")
+        raise
     except requests.exceptions.Timeout:
         logger.debug(f"Request timed out at {timeout} seconds, consider increasing timeout")
+        raise
     except requests.exceptions.RequestException as err:
         logger.debug(f"Oops, got some other error: {err}")
+        raise
 
     # Return response
     logger.debug("Got a 200 from the server")
@@ -221,66 +232,80 @@ def summary(skafos_api_token=None) -> dict:
     Returns all Skafos organizations, apps, and models that the provided API token has access to.
 
     :param skafos_api_token:
-        Skafos API Token associated with your user account. Get one at https://skafos.ai.
+        Skafos API Token associated with the user account. Get one at https://skafos.ai --> Settings --> Tokens.
     :type skafos_api_token:
-        str or None
+        str or None. Checks environment for 'SKAFOS_API_TOKEN' if not passed into the function directly.
     :return:
-        Dictionary of all organizations, apps, and models, this account has access to.
+        Nested dictionary of all organizations, apps, and models, this user has access to.
+    :rtype:
+        dict
     """
     summary_res = {}
 
     # Check for api token first
     if not skafos_api_token:
-        skafos_api_token = os.getenv('SKAFOS_API_TOKEN')
+        skafos_api_token = os.getenv("SKAFOS_API_TOKEN")
     if not skafos_api_token:
         raise InvalidTokenError("Missing Skafos API Token")
 
     # Prepare requests
-    header = {"X-API-Key": skafos_api_token}
     method = "GET"
     endpoint = "/organizations"
     res = _http_request(
-        method = method,
-        url = API_BASE_URL + endpoint,
-        header = header
+        method=method,
+        url=API_BASE_URL + endpoint,
+        api_token=skafos_api_token
     )
     for org in res:
-        summary_res[org["name"]] = {}
-        endpoint = f"/organizations/{org['name']}/apps"
+        summary_res[org["display_name"]] = {}
+        endpoint = f"/organizations/{org['display_name']}/apps?with_models=true"
         res = _http_request(
-            method= method,
-            url = API_BASE_URL + endpoint,
-            header = header
+            method=method,
+            url=API_BASE_URL + endpoint,
+            api_token=skafos_api_token
         )
         for app in res:
-            summary_res[org["name"]][app["name"]] = []
-            endpoint = f"/organizations/{org['name']}/apps/{app['name']}/models"
-            res = _http_request(
-                method = method,
-                url = API_BASE_URL + endpoint,
-                header = header
-            )
-            for model in res:
-                model_meta_data = {k: model[k] for k in model.keys() & {'id, ''name', 'updated_at', 'public'}}
-                summary_res[org["name"]][app["name"]].append(model_meta_data)
-    # Print out and return the summary response to the user
-    print(summary_res)
+            summary_res[org["display_name"]][app["name"]] = []
+            for model in app["models"]:
+                model_meta_data = {k: model[k] for k in model.keys() & {"name", "updated_at"}}
+                summary_res[org["display_name"]][app["name"]].append(model_meta_data)
+    # Return the summary response to the user
     return summary_res
 
 
-def list_model_versions(**kwargs) -> dict:
+def list_model_versions(**kwargs) -> list:
     """
     Returns a list of all saved model versions based on API token, organization,
     app, and model names.
+
+    :Keyword Arguments:
+        * *skafos_api_token* (``str``) --
+            Required. Skafos API Token associated with your user account.
+            If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
+        * *org_name* (``str``) --
+            Required. Skafos organization name.
+            If not provided, it will be read from the environment as `SKAFOS_ORG_NAME`.
+        * *app_name* (``str``) --
+            Required. Skafos app name associated with the above organization.
+            If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
+        * *model_name* (``str``) --
+            Required. Skafos model name associated with the above organization and app.
+            If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
+
+    :return:
+        List of dictionaries containing model versions that have been successfully uploaded to Skafos.
+    :rtype:
+        list
     """
     params = _generate_required_params(kwargs)
-    endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/model_versions?=order_by=versions%3Adesc"
+    endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/model_versions?order_by=version"
     res = _http_request(
-        method = "GET",
-        url = API_BASE_URL + endpoint,
-        api_token = params["skafos_api_token"]
+        method="GET",
+        url=API_BASE_URL + endpoint,
+        api_token=params["skafos_api_token"]
     )
-    print(res)
-    return res
-
-    
+    # Clean up the response so users have something manageable
+    versions = []
+    for model_version in res:
+        versions.append({k: model_version[k] for k in model_version.keys() & {"version", "name", "updated_at", "description"}})
+    return versions

@@ -1,8 +1,8 @@
 """Skafos Python SDK Exceptions"""
 
 
-class MissingParamError(Exception):
-    """Exception thrown when there is some missing parameter
+class InvalidParamError(Exception):
+    """Exception thrown when there is some missing or invalid parameter
     required for one of the SDK utilities."""
     pass
 

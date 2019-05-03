@@ -41,8 +41,8 @@ def _generate_required_params(args):
         params['org_name'] = args['org_name']
     else:
         params['org_name'] = os.getenv('SKAFOS_ORG_NAME')
-    #if not params['org_name']:
-    #    raise InvalidParamError("Missing Skafos Organization Name")
+    if not params['org_name']:
+        raise InvalidParamError("Missing Skafos Organization Name")
 
     # Grab app name
     if 'app_name' in args:

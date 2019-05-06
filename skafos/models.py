@@ -1,9 +1,12 @@
-
 import json
 import zipfile
+import logging
 
 from .http import *
 from .exceptions import *
+
+
+logger = logging.getLogger("skafos")
 
 
 def upload_version(files, description=None, **kwargs) -> dict:
@@ -12,7 +15,8 @@ def upload_version(files, description=None, **kwargs) -> dict:
     upload, removing that burden from the user. Once model has been uploaded to storage, returns a successful response.
 
     :param files:
-        Single model file path or list of file paths to zip up and upload to Skafos.
+        Single model file path or list of file paths to zip up and upload to Skafos. If your model file/files are not
+        in your working directory, Skafos will zip up and preserve the entire path.
     :type files:
         str or list
     :param description:
@@ -89,6 +93,7 @@ def upload_version(files, description=None, **kwargs) -> dict:
         with open(zip_name, "rb") as data:
             model_data = data.read()
 
+        logger.info("Uploading model version to Skafos.")
         upload_res = http_request(
             method="PUT",
             url=model_version_res["presigned_url"],
@@ -112,6 +117,7 @@ def upload_version(files, description=None, **kwargs) -> dict:
         raise UploadFailedError("Upload failed.")
 
     # Return cleaned response JSON to the user
+    logger.info("\nSuccessful Upload:")
     meta = {k: final_model_version_res[k] for k in final_model_version_res.keys() & {"version", "description", "name", "model"}}
     return meta
 
@@ -196,7 +202,7 @@ def list_versions(**kwargs) -> list:
         method="GET",
         url=API_BASE_URL + endpoint,
         api_token=params["skafos_api_token"]
-    )
+    ).json()
     # Clean up the response so users have something manageable
     versions = []
     for model_version in res:

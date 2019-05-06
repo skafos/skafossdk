@@ -164,6 +164,7 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
             else:
                 raise InvalidParamError("We were unable to find that file. Check to make sure that file is in your working directory.")
     
+
     # Create endpoint
     if 'org_name' in params:
         endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/"
@@ -175,10 +176,11 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
     body = {"filename": zip_name}
     if description and isinstance(description, str):
         if len(description) > 255:
-            print("You provided a description that was more than 255 characters, a model will be saved with a truncated description")
-            body['description'] = description[0:255]
+            raise InvalidParamError("Description too long. Please provide a description that is less than 255 characters")
         else:
             body['description'] = description
+    if description and not isinstance(description, str):
+        raise InvalidParamError(f"You provided a description with Type: {type(description)}. Please provide a description with Type: str")
 
     # Create a model version
     model_version_res = _http_request(
@@ -190,18 +192,18 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
 
     # Upload the model
     upload_res=None
-    if type(model_version_res)==dict and model_version_res.get('presigned_url'):
+    if type(model_version_res) == dict and model_version_res.get('presigned_url'):
         with open(zip_name, 'rb') as data:
-            asset_data = data.read()
+            model_data = data.read()
 
         upload_res = _http_request(
             method="PUT",
             url=model_version_res['presigned_url'],
-            payload=asset_data,
+            payload=model_data,
             api_token=params['skafos_api_token']
         )
     else:
-        print("Upload model failed")
+        raise UploadFailedError("Upload failed.")
 
     # Update the model version with the file path
     final_model_version_res=None
@@ -215,7 +217,7 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
             api_token=params['skafos_api_token']
         )
     else:
-        print("Unable to upload data")
+        raise UploadFailedError("Upload failed.")
     # Return response to the user
     return final_model_version_res
 

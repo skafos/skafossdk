@@ -74,7 +74,7 @@ def _http_request(method, url, api_token, timeout=None, payload=None):
         header["Content-Type"] = "application/octet-stream"
     if not timeout:
         timeout = DEFAULT_TIMEOUT
-    print("HEADER: ", header, "\n\n")
+
     try:
         # Prepare request object and send it
         req = requests.Request(method, url, headers=header, data=payload)
@@ -172,12 +172,12 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
     # Create request body
     body = {"filename": zip_name}
     if description and isinstance(description, str):
-        body["description"] = description
-        # TODO check that description is less than 255 charvar
-        # TODO what to do if not string????
+        if len(description) > 255:
+            logger.debug("You provided a description that was more than 255 characters, a model will be saved with a truncated description")
+            body['description'] = description[0:255]
+        else:
+            body['description'] = description
 
-
-    # Make request TODO update to use http_request handler function
     model_version_res = _http_request(
         method="POST",
         url=API_BASE_URL + endpoint + "model_versions",
@@ -185,17 +185,11 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
         api_token=params["skafos_api_token"]
     )
 
-    print(model_version_res)
-
-    
     upload_res=None
     if type(model_version_res)==dict and model_version_res.get('presigned_url'):
-        #header["Content-Type"] = "application/octet-stream"
         with open(zip_name, 'rb') as data:
             asset_data = data.read()
         
-        #body = {"file": asset_data} 
-        print(asset_data)
         upload_res = _http_request(
             method="PUT",
             url=model_version_res['presigned_url'],
@@ -203,24 +197,21 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
             api_token=params['skafos_api_token']
         )
     else:
-        "Unable to put data"
-    print(upload_res)
+        print("Upload model failed")
 
     final_model_version_res=None
     if upload_res and upload_res==200:
-        # If upload succeeds, update db TODO handle success/failure from previous call
         model_version_endpoint = endpoint + f"model_versions/{model_version_res['model_version_id']}"
         data = {"filepath": model_version_res['filepath']}
         final_model_version_res = _http_request(
             method="PATCH",
-            url=API_BASE_URL +model_version_endpoint,
+            url=API_BASE_URL + model_version_endpoint,
             payload=json.dumps(data),
             api_token=params['skafos_api_token']
         )
     else:
         print("Unable to upload data")
     # Return response to the user
-
     return final_model_version_res
 
 

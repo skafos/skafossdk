@@ -161,7 +161,9 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
                         skazip.write(os.path.join(root, dfile))
             elif os.path.isfile(zfile):
                 skazip.write(zfile)
-
+            else:
+                raise InvalidParamError("We were unable to find that file. Check to make sure that file is in your working directory.")
+    
     # Create endpoint
     if 'org_name' in params:
         endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/"
@@ -178,6 +180,7 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
         else:
             body['description'] = description
 
+    # Create a model version
     model_version_res = _http_request(
         method="POST",
         url=API_BASE_URL + endpoint + "model_versions",
@@ -185,11 +188,12 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
         api_token=params["skafos_api_token"]
     )
 
+    # Upload the model
     upload_res=None
     if type(model_version_res)==dict and model_version_res.get('presigned_url'):
         with open(zip_name, 'rb') as data:
             asset_data = data.read()
-        
+
         upload_res = _http_request(
             method="PUT",
             url=model_version_res['presigned_url'],
@@ -199,6 +203,7 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
     else:
         print("Upload model failed")
 
+    # Update the model version with the file path
     final_model_version_res=None
     if upload_res and upload_res==200:
         model_version_endpoint = endpoint + f"model_versions/{model_version_res['model_version_id']}"

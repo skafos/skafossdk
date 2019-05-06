@@ -16,7 +16,7 @@ How will the user know the model_id?
 
 - Request: `POST`
 - Path: `/organizations/<org-name-or-id>/apps/<app-name-or-id>/models/<model-name-or-id>/model_versions`
-- Body: `{"model_id": "", "file_name": "", "description": ""}`
+- Body: `{"filename": "", "description": ""}`
 - Response: `{"filepath": "", "model_version_id": "", "presigned_url": ""}`
 - Errors: 404, 201, 409, 409, 500
 

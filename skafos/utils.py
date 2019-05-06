@@ -175,7 +175,7 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
     body = {"filename": zip_name}
     if description and isinstance(description, str):
         if len(description) > 255:
-            logger.debug("You provided a description that was more than 255 characters, a model will be saved with a truncated description")
+            print("You provided a description that was more than 255 characters, a model will be saved with a truncated description")
             body['description'] = description[0:255]
         else:
             body['description'] = description

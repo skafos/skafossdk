@@ -143,8 +143,7 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
     """
     # Get required params
     params = _generate_required_params(kwargs)
-    header = {"X-API-KEY": params["skafos_api_token"]}
-
+    
     # Unzip files
     filelist = None
     if isinstance(files, list):
@@ -162,47 +161,59 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
                         skazip.write(os.path.join(root, dfile))
             elif os.path.isfile(zfile):
                 skazip.write(zfile)
+            else:
+                raise InvalidParamError("We were unable to find that file. Check to make sure that file is in your working directory.")
+    
 
     # Create endpoint
-    if 'org_name' in params:
-        endpoint = f"/organizations/{params['org_name']}/app/{params['app_name']}/models/{params['model_name']}/"
-    else:
-        # Default to user org - WHERE does the error come back if they have more than one org?
-        endpoint = f"/app/{params['app_name']}/models/{params['model_name']}/"
+    endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/"
 
     # Create request body
-    body = {"file_name": zip_name}
+    body = {"filename": zip_name}
     if description and isinstance(description, str):
-        body["description"] = description
-        # TODO check that description is less than 255 charvar
-        # TODO what to do if not string????
+        if len(description) > 255:
+            raise InvalidParamError("Description too long. Please provide a description that is less than 255 characters")
+        else:
+            body['description'] = description
+    if description and not isinstance(description, str):
+        raise InvalidParamError(f"You provided a description with Type: {type(description)}. Please provide a description with Type: str")
 
-    # Make request TODO update to use http_request handler function
-    model_version_res = _model_version_record(
-        endpoint=endpoint,
-        payload=json.dumps({}),
-        header=header
+    # Create a model version
+    model_version_res = _http_request(
+        method="POST",
+        url=API_BASE_URL + endpoint + "model_versions",
+        payload=json.dumps(body),
+        api_token=params["skafos_api_token"]
     )
 
-    # Upload model to storage
-    header["Content-Type"] = "application/octet-stream"
-    body = {"file": ""} # TODO need to figure out how to put the actual zip file in this (byte stream)
-    upload_res = _upload(
-        url=model_version_res['presigned_url'],
-        payload=json.dumps({body}),
-        header=header
-    )
+    # Upload the model
+    upload_res=None
+    if type(model_version_res) == dict and model_version_res.get('presigned_url'):
+        with open(zip_name, 'rb') as data:
+            model_data = data.read()
 
-    # If upload succeeds, update db TODO handle success/failure from previous call
-    model_version_endpoint = endpoint + f"model_versions/{model_version_res['model_version_id']}"
-    _ = header.pop("Content-Type")
-    data = {"filepath": model_version_res['filepath']}
-    final_model_version_res = _update_model_version_record(
-        endpoint=model_version_endpoint,
-        payload=json.dumps({data}),
-        header=header
-    )
+        upload_res = _http_request(
+            method="PUT",
+            url=model_version_res['presigned_url'],
+            payload=model_data,
+            api_token=params['skafos_api_token']
+        )
+    else:
+        raise UploadFailedError("Upload failed.")
 
+    # Update the model version with the file path
+    final_model_version_res = None
+    if upload_res and upload_res == 200:
+        model_version_endpoint = endpoint + f"model_versions/{model_version_res['model_version_id']}"
+        data = {"filepath": model_version_res['filepath']}
+        final_model_version_res = _http_request(
+            method="PATCH",
+            url=API_BASE_URL + model_version_endpoint,
+            payload=json.dumps(data),
+            api_token=params['skafos_api_token']
+        )
+    else:
+        raise UploadFailedError("Upload failed.")
     # Return response to the user
     return final_model_version_res
 

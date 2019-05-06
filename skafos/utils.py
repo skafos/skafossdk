@@ -74,7 +74,7 @@ def _http_request(method, url, api_token, timeout=None, payload=None):
         header["Content-Type"] = "application/octet-stream"
     if not timeout:
         timeout = DEFAULT_TIMEOUT
-
+    print("HEADER: ", header, "\n\n")
     try:
         # Prepare request object and send it
         req = requests.Request(method, url, headers=header, data=payload)
@@ -143,8 +143,7 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
     """
     # Get required params
     params = _generate_required_params(kwargs)
-    header = {"X-API-KEY": params["skafos_api_token"]}
-
+    
     # Unzip files
     filelist = None
     if isinstance(files, list):
@@ -165,45 +164,63 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
 
     # Create endpoint
     if 'org_name' in params:
-        endpoint = f"/organizations/{params['org_name']}/app/{params['app_name']}/models/{params['model_name']}/"
+        endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/"
     else:
         # Default to user org - WHERE does the error come back if they have more than one org?
-        endpoint = f"/app/{params['app_name']}/models/{params['model_name']}/"
+        endpoint = f"/apps/{params['app_name']}/models/{params['model_name']}/"
 
     # Create request body
-    body = {"file_name": zip_name}
+    body = {"filename": zip_name}
     if description and isinstance(description, str):
         body["description"] = description
         # TODO check that description is less than 255 charvar
         # TODO what to do if not string????
 
+
     # Make request TODO update to use http_request handler function
-    model_version_res = _model_version_record(
-        endpoint=endpoint,
-        payload=json.dumps({}),
-        header=header
+    model_version_res = _http_request(
+        method="POST",
+        url=API_BASE_URL + endpoint + "model_versions",
+        payload=json.dumps(body),
+        api_token=params["skafos_api_token"]
     )
 
-    # Upload model to storage
-    header["Content-Type"] = "application/octet-stream"
-    body = {"file": ""} # TODO need to figure out how to put the actual zip file in this (byte stream)
-    upload_res = _upload(
-        url=model_version_res['presigned_url'],
-        payload=json.dumps({body}),
-        header=header
-    )
+    print(model_version_res)
 
-    # If upload succeeds, update db TODO handle success/failure from previous call
-    model_version_endpoint = endpoint + f"model_versions/{model_version_res['model_version_id']}"
-    _ = header.pop("Content-Type")
-    data = {"filepath": model_version_res['filepath']}
-    final_model_version_res = _update_model_version_record(
-        endpoint=model_version_endpoint,
-        payload=json.dumps({data}),
-        header=header
-    )
+    
+    upload_res=None
+    if type(model_version_res)==dict and model_version_res.get('presigned_url'):
+        #header["Content-Type"] = "application/octet-stream"
+        with open(zip_name, 'rb') as data:
+            asset_data = data.read()
+        
+        #body = {"file": asset_data} 
+        print(asset_data)
+        upload_res = _http_request(
+            method="PUT",
+            url=model_version_res['presigned_url'],
+            payload=asset_data,
+            api_token=params['skafos_api_token']
+        )
+    else:
+        "Unable to put data"
+    print(upload_res)
 
+    final_model_version_res=None
+    if upload_res and upload_res==200:
+        # If upload succeeds, update db TODO handle success/failure from previous call
+        model_version_endpoint = endpoint + f"model_versions/{model_version_res['model_version_id']}"
+        data = {"filepath": model_version_res['filepath']}
+        final_model_version_res = _http_request(
+            method="PATCH",
+            url=API_BASE_URL +model_version_endpoint,
+            payload=json.dumps(data),
+            api_token=params['skafos_api_token']
+        )
+    else:
+        print("Unable to upload data")
     # Return response to the user
+
     return final_model_version_res
 
 

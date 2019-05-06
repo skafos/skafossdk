@@ -202,8 +202,8 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
         raise UploadFailedError("Upload failed.")
 
     # Update the model version with the file path
-    final_model_version_res=None
-    if upload_res and upload_res==200:
+    final_model_version_res = None
+    if upload_res and upload_res == 200:
         model_version_endpoint = endpoint + f"model_versions/{model_version_res['model_version_id']}"
         data = {"filepath": model_version_res['filepath']}
         final_model_version_res = _http_request(

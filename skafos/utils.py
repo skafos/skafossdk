@@ -214,14 +214,46 @@ def fetch_model_version(version=None, **kwargs):
     """
     Download a model version (a zipped archive) for a specific app and model directly from Skafos.
 
-    :param skafos_api_token:
-    :param org_name:
-    :param app_name:
-    :param model_name:
+    
     :param version:
+        Version of the model 
+        
+    :param \**kwargs:
+        Keyword arguments to identify which organization, app, and model to upload the model version to. See below.
+
+    :Keyword Arguments:
+        * *skafos_api_token* (``str``) --
+            Required. If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
+        * *org_name* (``str``) --
+            Optional. If not provided, it will be read from the environment as `SKAFOS_ORG_NAME`.
+        * *app_name* (``str``) --
+            Required. If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
+        * *model_name* (``str``) --
+            Required. If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
+            
     :return:
     """
+    
+    # Get required params
     params = _generate_required_params(kwargs)
+    header = {"X-API-KEY": params["skafos_api_token"]}
+    
+    # Get model version and create endpoint. If none is specified, get latest version for model
+    if not version:
+        endpoint = f"/organizations/{params['org_name']}/app/{params['app_name']}/models/{params['model_name']}"
+    elif isinstance(version, int): 
+        endpoint = f"/organizations/{params['org_name']}/app/{params['app_name']}/models/{params['model_name']}?version={version}"
+    else: # You passed in some garbage and so we need to throw an error
+        raise InvalidParamError("If specified, the model version must be an integer")
+        
+    
+    # Download the model
+    method = "GET"
+    res = _http_request(
+        method=method,
+        url=API_BASE_URL + endpoint,
+        api_token=skafos_api_token
+    )
 
     # TODO like everything else
     pass

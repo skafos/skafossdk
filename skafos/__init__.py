@@ -36,7 +36,7 @@ def summary(skafos_api_token=None) -> dict:
         method=method,
         url=API_BASE_URL + endpoint,
         api_token=skafos_api_token
-    )
+    ).json()
     for org in res:
         summary_res[org["display_name"]] = {}
         endpoint = f"/organizations/{org['display_name']}/apps?with_models=true"
@@ -44,7 +44,7 @@ def summary(skafos_api_token=None) -> dict:
             method=method,
             url=API_BASE_URL + endpoint,
             api_token=skafos_api_token
-        )
+        ).json()
         for app in res:
             summary_res[org["display_name"]][app["name"]] = []
             for model in app["models"]:
@@ -53,7 +53,3 @@ def summary(skafos_api_token=None) -> dict:
 
     # Return the summary response to the user
     return summary_res
-
-
-
-

@@ -14,9 +14,11 @@ def upload_version(files, description=None, **kwargs) -> dict:
     Uploads a model version (a zipped archive) for a specific app and model directly to Skafos. Zips files upon
     upload, removing that burden from the user. Once model has been uploaded to storage, returns a successful response.
 
+    .. note:: If your model file(s) are not in your working directory, Skafos will zip up and preserve the entire
+              path pointing to the file(s).
+
     :param files:
-        Single model file path or list of file paths to zip up and upload to Skafos. If your model file/files are not
-        in your working directory, Skafos will zip up and preserve the entire path.
+        Single model file path or list of file paths to zip up and upload to Skafos.
     :type files:
         str or list
     :param description:
@@ -26,7 +28,7 @@ def upload_version(files, description=None, **kwargs) -> dict:
     :param \**kwargs:
         Keyword arguments to identify which organization, app, and model to upload the model version to. See below.
 
-    :Keyword Arguments:
+    :Keyword Args:
         * *skafos_api_token* (``str``) --
             Required. If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
         * *org_name* (``str``) --
@@ -36,10 +38,23 @@ def upload_version(files, description=None, **kwargs) -> dict:
         * *model_name* (``str``) --
             Required. If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
 
-    :return:
-        A meta data dictionary for the uploaded model version.
-    :rtype:
-        dict
+    :returns:
+            A meta data dictionary for the uploaded model version.
+
+    :Usage:
+    .. sourcecode:: python
+
+       from skafos import models
+
+       # Upload a model version to Skafos
+       models.upload_version(
+           skafos_api_token="<your-api-token>",
+           org_name="my-organization",
+           app_name="my-app",
+           model_name="my-model",
+           files="my_text_classifier.mlmodel",
+           description="My model version upload to Skafos"
+       )
     """
     # Get required params
     params = generate_required_params(kwargs)
@@ -129,11 +144,12 @@ def fetch_version(version=None, **kwargs):
 
     :param version:
         Version of the model to download. If unspecified, defaults to the latest version
-
+    :type version:
+        int
     :param \**kwargs:
         Keyword arguments to identify which organization, app, and model to upload the model version to. See below.
 
-    :Keyword Arguments:
+    :Keyword Args:
         * *skafos_api_token* (``str``) --
             Required. If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
         * *org_name* (``str``) --
@@ -145,6 +161,28 @@ def fetch_version(version=None, **kwargs):
 
     :return:
         None
+
+    :Usage:
+    .. sourcecode:: python
+
+       from skafos import models
+
+       # Fetch the latest version of your model
+       models.fetch_version(
+           skafos_api_token="<your-api-token>",
+           org_name="my-organization",
+           app_name="my-app",
+           model_name="my-model"
+       )
+
+       # Fetch a specific version of your model
+       models.fetch_version(
+           skafos_api_token="<your-api-token>",
+           org_name="my-organization",
+           app_name="my-app",
+           model_name="my-model",
+           version=2
+       )
     """
 
     # Get required params
@@ -177,7 +215,7 @@ def list_versions(**kwargs) -> list:
     Returns a list of all saved model versions based on API token, organization,
     app, and model names.
 
-    :Keyword Arguments:
+    :Keyword Args:
         * *skafos_api_token* (``str``) --
             Required. Skafos API Token associated with your user account.
             If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
@@ -195,6 +233,19 @@ def list_versions(**kwargs) -> list:
         List of dictionaries containing model versions that have been successfully uploaded to Skafos.
     :rtype:
         list
+
+    :Usage:
+    .. sourcecode:: python
+
+       from skafos import models
+
+       # List previously saved model versions
+       models.list_versions(
+           skafos_api_token="<your-api-token>",
+           org_name="my-organization",
+           app_name="my-app",
+           model_name="my-model"
+       )
     """
     params = generate_required_params(kwargs)
     endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/model_versions?order_by=version"

@@ -13,9 +13,10 @@ def summary(skafos_api_token=None) -> dict:
     Returns all Skafos organizations, apps, and models that the provided API token has access to.
 
     :param skafos_api_token:
-        Skafos API Token associated with the user account. Get one at https://skafos.ai --> Settings --> Tokens.
+        Skafos API Token associated with the user account. Checks environment for 'SKAFOS_API_TOKEN' if not passed
+        into the function directly.Get one at https://skafos.ai --> Settings --> Tokens.
     :type skafos_api_token:
-        str or None. Checks environment for 'SKAFOS_API_TOKEN' if not passed into the function directly.
+        str or None
     :return:
         Nested dictionary of all organizations, apps, and models, this user has access to.
     :rtype:

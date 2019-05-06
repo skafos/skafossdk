@@ -13,6 +13,7 @@ import logging
 from .exceptions import *
 
 API_BASE_URL = "https://api.skafos.wtf/v2"  # production: https://api.skafos.ai/v2
+DOWNLOAD_BASE_URL = "https://download.skafos.wtf/v2"  # production: https://download.skafos.ai/v2
 HTTP_VERBS = ["GET", "POST", "PUT", "PATCH"]
 DEFAULT_TIMEOUT = 120
 logger = logging.getLogger(name="skafos")
@@ -63,7 +64,7 @@ def _generate_required_params(args):
     return params
 
 
-def _http_request(method, url, api_token, timeout=None, payload=None):
+def _http_request(method, url, api_token, timeout=None, payload=None, stream=False):
     # Check that we ae using an appropriate request type
     if method not in HTTP_VERBS:
         raise requests.exceptions.HTTPError("Must use an appropriate HTTP verb")
@@ -81,8 +82,17 @@ def _http_request(method, url, api_token, timeout=None, payload=None):
         r = req.prepare()
         with requests.Session() as s:
             logger.debug(f"Sending prepared request with url: {url}")
-            response = s.send(r, timeout=timeout)
-            response.raise_for_status()
+            if stream and method == "GET":
+                with s.send(r, timeout=timeout, stream=True) as response:
+                    response.raise_for_status()
+                    fn = url.split("models/")[1].split("?")[0]
+                    with open(fn+".zip", 'wb') as f:
+                        for chunk in response.iter_content(chunk_size=512*1024):
+                            if chunk:
+                                f.write(chunk)
+            else:
+                response = s.send(r, timeout=timeout)
+                response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         logger.debug(f"HTTP Error: {err}")
         if response.status_code == 401:
@@ -222,18 +232,48 @@ def fetch_model_version(version=None, **kwargs):
 
     """
     Download a model version (a zipped archive) for a specific app and model directly from Skafos.
-
-    :param skafos_api_token:
-    :param org_name:
-    :param app_name:
-    :param model_name:
+    
     :param version:
+        Version of the model to download. If unspecified, defaults to the latest version
+        
+    :param \**kwargs:
+        Keyword arguments to identify which organization, app, and model to upload the model version to. See below.
+
+    :Keyword Arguments:
+        * *skafos_api_token* (``str``) --
+            Required. If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
+        * *org_name* (``str``) --
+            Optional. If not provided, it will be read from the environment as `SKAFOS_ORG_NAME`.
+        * *app_name* (``str``) --
+            Required. If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
+        * *model_name* (``str``) --
+            Required. If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
+            
     :return:
     """
+    
+    # Get required params
     params = _generate_required_params(kwargs)
+    
+    # Get model version and create endpoint. 
+    if not version:
+        endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}"
+    elif isinstance(version, int): 
+        endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}?version={version}"
+    else: # You passed in some garbage and so we need to throw an error
+        raise InvalidParamError("If specified, the model version must be an integer.")
+    
+    # Download the model
+    method = "GET"
+    res = _http_request(
+        method=method,
+        url=DOWNLOAD_BASE_URL + endpoint,
+        api_token=params["skafos_api_token"],
+        stream=True
+    )
 
-    # TODO like everything else
-    pass
+    # Return the summary 
+    return logger.info("File downloaded.")
 
 
 def summary(skafos_api_token=None) -> dict:

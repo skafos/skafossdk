@@ -166,11 +166,7 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
     
 
     # Create endpoint
-    if 'org_name' in params:
-        endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/"
-    else:
-        # Default to user org - WHERE does the error come back if they have more than one org?
-        endpoint = f"/apps/{params['app_name']}/models/{params['model_name']}/"
+    endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/"
 
     # Create request body
     body = {"filename": zip_name}

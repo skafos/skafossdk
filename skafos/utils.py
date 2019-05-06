@@ -105,13 +105,9 @@ def _http_request(method, url, api_token, timeout=None, payload=None):
 
     # Return response
     logger.debug("Got a 200 from the server")
-    if method == "PUT":
-        return response.status_code
-    else:
-        return response.json()
+    return response
 
 
-# TODO handle exceptions
 def upload_model_version(files, description=None, **kwargs) -> dict:
     #TODO clean up the docstring and make consistent
     """
@@ -123,7 +119,7 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
     :type files:
         str or list
     :param description:
-
+        Optional. Short description for your model version. Must be less than or equal to 255 characters long.
     :type description:
         str
     :param \**kwargs:
@@ -140,6 +136,9 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
             Required. If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
 
     :return:
+        A meta data dictionary for the uploaded model version.
+    :rtype:
+        dict
     """
     # Get required params
     params = _generate_required_params(kwargs)
@@ -152,8 +151,8 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
         filelist = [files]
 
     # Create zipped filename TODO check with kevin about how to use right zipfile name here
-    zip_name = params['model_name'] if params['model_name'][-4:] == ".zip" else f"{params['model_name']}.zip"
-    with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as skazip:
+    zip_name = params["model_name"] if params["model_name"][-4:] == ".zip" else f"{params['model_name']}.zip"
+    with zipfile.ZipFile(zip_name, "w", zipfile.ZIP_DEFLATED) as skazip:
         for zfile in filelist:
             if os.path.isdir(zfile):
                 for root, dirs, files in os.walk(zfile):
@@ -163,7 +162,6 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
                 skazip.write(zfile)
             else:
                 raise InvalidParamError("We were unable to find that file. Check to make sure that file is in your working directory.")
-    
 
     # Create endpoint
     endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/"
@@ -174,7 +172,7 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
         if len(description) > 255:
             raise InvalidParamError("Description too long. Please provide a description that is less than 255 characters")
         else:
-            body['description'] = description
+            body["description"] = description
     if description and not isinstance(description, str):
         raise InvalidParamError(f"You provided a description with Type: {type(description)}. Please provide a description with Type: str")
 
@@ -184,38 +182,38 @@ def upload_model_version(files, description=None, **kwargs) -> dict:
         url=API_BASE_URL + endpoint + "model_versions",
         payload=json.dumps(body),
         api_token=params["skafos_api_token"]
-    )
+    ).json()
 
     # Upload the model
-    upload_res=None
-    if type(model_version_res) == dict and model_version_res.get('presigned_url'):
-        with open(zip_name, 'rb') as data:
+    if model_version_res.get("presigned_url"):
+        with open(zip_name, "rb") as data:
             model_data = data.read()
 
         upload_res = _http_request(
             method="PUT",
-            url=model_version_res['presigned_url'],
+            url=model_version_res["presigned_url"],
             payload=model_data,
-            api_token=params['skafos_api_token']
+            api_token=params["skafos_api_token"]
         )
     else:
         raise UploadFailedError("Upload failed.")
 
     # Update the model version with the file path
-    final_model_version_res = None
-    if upload_res and upload_res == 200:
+    if upload_res.status_code == 200:
         model_version_endpoint = endpoint + f"model_versions/{model_version_res['model_version_id']}"
-        data = {"filepath": model_version_res['filepath']}
+        data = {"filepath": model_version_res["filepath"]}
         final_model_version_res = _http_request(
             method="PATCH",
             url=API_BASE_URL + model_version_endpoint,
             payload=json.dumps(data),
-            api_token=params['skafos_api_token']
-        )
+            api_token=params["skafos_api_token"]
+        ).json()
     else:
         raise UploadFailedError("Upload failed.")
-    # Return response to the user
-    return final_model_version_res
+
+    # Return cleaned response JSON to the user
+    meta = {k: final_model_version_res[k] for k in final_model_version_res.keys() & {"version", "description", "name", "model"}}
+    return meta
 
 
 # TODO what does this return?

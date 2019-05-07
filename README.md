@@ -1,50 +1,55 @@
 # Skafos Python SDK
+<img src="skafos_mark.jpg" width="50", height="50", align="right">
 
-- Staging: `https://api.skafos.wtf/v2`
-- Production: `https://api.skafos.ai/v2`
+[Skafos](https://skafos.ai) is the platform for automating the delivery of machine learning models to mobile devices.
+We provide this SDK as a Python wrapper for uploading, fetching, and listing model versions from the platform. 
 
-All endpoints use `SKAFOS_API_TOKEN` supplied in the header for authentication.
+If you're a Data Scientist or Machine Learning Engineer, you're the one entrusted with building robust machine
+learning models. This SDK is an interface to the Skafos platform, allowing you to do the
+following from your Python development environment:
 
-## Upload Model Versions
-Upload a file, or list of files, compress them to a zip, then hit 2 endpoints:
+- **Upload a model version**: Save a new version of your machine learning model to the Skafos platform,
+making it available for mobile delivery.
+- **Fetch a model version**: Download a previously saved version of your machine learning model from
+the Skafos platform.
+- **List model versions**: For each of your apps and models, see what model versions you have previously
+saved to the Skafos platform.
 
-**First Call:**
-Create model version record in postgres and return the s3 pre-signed URL. Model version id 
-and filepath left empty in DB until after successful upload to s3. 
 
-How will the user know the model_id?
+## Supported Platforms
+- macOS 10.12+
+- Linux (?)
 
-- Request: `POST`
-- Path: `/organizations/<org-name-or-id>/apps/<app-name-or-id>/models/<model-name-or-id>/model_versions`
-- Body: `{"filename": "", "description": ""}`
-- Response: `{"filepath": "", "model_version_id": "", "presigned_url": ""}`
-- Errors: 404, 201, 409, 409, 500
 
-Can we get a special message for when an app or model don't exist?
-Likely from a 404(not found)/409(conflict) from backend routes and controllers.
+## System Requirements
+- Python 3+
+- [Pip](https://pip.pypa.io/en/stable/installing/) (to download `skafos` from the Python Package Index)
 
-**Second Call:**
-Upload model to s3: `s3://skafos.staging-mlmodels/<org-id>/<app-id>/<model-id>/<zipfile>`.
 
-- Request: `PUT`
-- Header: `{"Content-Type": "application/octet-stream"}`
-- URL: Presigned URL from last request response
-- File: file object to upload
-- Response: 200 is returned on success no body
+## Installation
+You can install `skafos` directly from the Python Package Index [(PyPI)](https://pypi.org/).
+```bash
+pip install -U skafos
+```
 
-**Third Call:**
-Update the model version record in postgres after successful write to s3.
+Once you've installed `skafos`, you can import the package in your Python environment.
+```python
+import skafos
+skafos.get_version() # returns the current SDK version
+```
+For more details on installation and usage, see the package documentation.
 
-- Request: `PATCH`
-- Path: `/organizations/<org-name-or-id>/apps/<app-name-or-id>/models/<model-name-or-id>/model_versions/<model-version-id>` model_version_id form first request
-- Body: `{"filepath": ""}` filepath from first request
-- Response: `{}` big thing
-- Errors: Generic error thrown when there is an upload error.
 
-## Downloading a Model Version
-Retrieve a model version from s3. (Optionally) unzip archive once downloaded.
-Version not required. It defaults to latest if you don't supply that.
+## Documentation
+- The [package documentation](https://...) contains more details on how to use the Skafos SDK.
+- The [platform documentation](https://docs.metismachine.io) contains more details on how Skafos delivers
+and manages machine learning models on mobile devices.
 
-- Request: `GET`
-- Path: `/organizations/<org-id>/app/<app-name-or-id>/models/<model-name-or-id>?version=<version>`
-- Response: 200 if successful and file will download
+
+## Need Help?
+Didn't find something you need? Confused by something? Need more guidance?
+
+Please contact us with questions or feedback! Here are two ways:
+
+-  [**Signup for our Slack Channel**](https://join.slack.com/t/metismachine-skafos/shared_invite/enQtNTAxMzEwOTk2NzA5LThjMmMyY2JkNTkwNDQ1YjgyYjFiY2MyMjRkMzYyM2E4MjUxNTJmYmQyODVhZWM2MjQwMjE5ZGM1Y2YwN2M5ODI)
+-  [**Find us on Reddit**](https://reddit.com/r/skafos)

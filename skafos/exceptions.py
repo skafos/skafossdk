@@ -14,3 +14,9 @@ class UploadFailedError(Exception):
     """Exception thrown when there is an error while uploading
     a model version to Skafos."""
     pass
+
+
+class DownloadFailedError(Exception):
+    """Exception thrown when there is an error while downloading
+    a model version from Skafos."""
+    pass

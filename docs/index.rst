@@ -25,8 +25,18 @@ Skafos SDK Documentation
    reference/utilities.rst
 
 .. toctree::
+   :glob:
    :maxdepth: 1
-   :caption: Example Usage Guide
+   :caption: Skafos Components
+
+   components/organizations.rst
+   components/apps.rst
+   components/models.rst
+   components/model_versions.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Usage Guides
 
    example_usage/*
 

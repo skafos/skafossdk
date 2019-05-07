@@ -1,7 +1,7 @@
 Models
 ======
 Models are the second integration point between Skafos and your iOS application. An organization owns
-an app, and within an app, you can have models. ADD MORE.
+an app, and within an app, you can have models. Think of models like a bin for you to upload different versions
+over time.
 
-Each model has an :attr:`model-name` and a :attr:`model-id` that you
-can use to identify it.
+Each model has a :attr:`model_name` that you should use to identify it.

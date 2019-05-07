@@ -4,5 +4,4 @@ Apps are the first and primary integration point for Skafos and your iOS applica
 place for you to manage model(s), upload and download model versions, and deliver models to your iOS
 application using a specific environment.
 
-Each app has an :attr:`app-name` and a unique :attr:`app-id` that you
-can use to identify it.
+Each app has an :attr:`app_name` that you should use to identify it.

@@ -188,6 +188,10 @@ def fetch_version(version=None, **kwargs):
     # Get required params
     params = generate_required_params(kwargs)
 
+    # Check to warn about overwriting file
+    if os.path.exists(params["model_name"] + ".zip"):
+        raise DownloadFailedError("A zip file already exists in your working directory with the model name you're trying to download.")
+
     # Get model version and create endpoint.
     if not version:
         endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}"

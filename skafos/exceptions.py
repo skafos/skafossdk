@@ -1,6 +1,3 @@
-"""Skafos Python SDK Exceptions"""
-
-
 class InvalidParamError(Exception):
     """Exception thrown when there is some missing or invalid parameter
     required for one of the SDK utilities."""
@@ -9,7 +6,7 @@ class InvalidParamError(Exception):
 
 class InvalidTokenError(Exception):
     """Exception thrown when there is either a missing or
-    invalid API token when a request was made to Skafos."""
+    invalid API token when a request is made to Skafos."""
     pass
 
 

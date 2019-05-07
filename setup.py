@@ -30,8 +30,6 @@ setuptools.setup(
     'Programming Language :: Python :: 3'
   ],
   project_urls={
-    "SDK Documentation": "",
-    "Skafos Platform Documentation": "",
     "Source": "https://github.com/skafos/skafossdk",
     "Website": "https://skafos.ai"
   },

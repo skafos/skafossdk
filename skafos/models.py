@@ -11,32 +11,33 @@ logger = logging.getLogger("skafos")
 
 def upload_version(files, description=None, **kwargs) -> dict:
     """
-    Uploads a model version (a zipped archive) for a specific app and model directly to Skafos. Zips files upon
-    upload, removing that burden from the user. Once model has been uploaded to storage, returns a successful response.
+    Upload a model version (one or more files) for a specific app and model to Skafos. All files
+    are automatically zipped together and uploaded to storage. Once successfully uploaded, a dictionary
+    of meta data is returned.
 
     .. note:: If your model file(s) are not in your working directory, Skafos will zip up and preserve the entire
-              path pointing to the file(s).
+              path pointing to the file(s). We recommend placing your file(s) in your current working directory.
 
     :param files:
         Single model file path or list of file paths to zip up and upload to Skafos.
     :type files:
         str or list
     :param description:
-        Optional. Short description for your model version. Must be less than or equal to 255 characters long.
+        *Optional*. Short description for your model version. Must be less than or equal to 255 characters.
     :type description:
         str
     :param \**kwargs:
-        Keyword arguments to identify which organization, app, and model to upload the model version to. See below.
+        Keyword arguments identifying the organization, app, and model for upload. See below.
 
     :Keyword Args:
         * *skafos_api_token* (``str``) --
-            Required. If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
+            If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
         * *org_name* (``str``) --
-            Optional. If not provided, it will be read from the environment as `SKAFOS_ORG_NAME`.
+            If not provided, it will be read from the environment as `SKAFOS_ORG_NAME`.
         * *app_name* (``str``) --
-            Required. If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
+            If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
         * *model_name* (``str``) --
-            Required. If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
+            If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
 
     :returns:
             A meta data dictionary for the uploaded model version.
@@ -138,25 +139,25 @@ def upload_version(files, description=None, **kwargs) -> dict:
 
 def fetch_version(version=None, **kwargs):
     """
-    Download a model version (a zipped archive) for a specific app and model directly from Skafos to your current
-    working directory as <model_name>.zip.
+    Download a model version as a zipped archive for a specific app and model from Skafos to your current
+    working directory as `<model_name>.zip`.
 
     :param version:
-        Version of the model to download. If unspecified, defaults to the latest version
+        Version of the model to download. If unspecified, defaults to the latest version.
     :type version:
         int
     :param \**kwargs:
-        Keyword arguments to identify which organization, app, and model to upload the model version to. See below.
+        Keyword arguments identifying the organization, app, and model for download. See below.
 
     :Keyword Args:
         * *skafos_api_token* (``str``) --
-            Required. If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
+            If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
         * *org_name* (``str``) --
-            Optional. If not provided, it will be read from the environment as `SKAFOS_ORG_NAME`.
+            If not provided, it will be read from the environment as `SKAFOS_ORG_NAME`.
         * *app_name* (``str``) --
-            Required. If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
+            If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
         * *model_name* (``str``) --
-            Required. If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
+            If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
 
     :return:
         None
@@ -211,21 +212,19 @@ def fetch_version(version=None, **kwargs):
 
 def list_versions(**kwargs) -> list:
     """
-    Returns a list of all saved model versions based on API token, organization,
-    app, and model names.
+    Return a list of all saved model versions based on organization, app name, and model name.
+
+    :param \**kwargs:
+        Keyword arguments identifying the organization, app, and model for version retrieval. See below.
 
     :Keyword Args:
         * *skafos_api_token* (``str``) --
-            Required. Skafos API Token associated with your user account.
             If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
         * *org_name* (``str``) --
-            Required. Skafos organization name.
             If not provided, it will be read from the environment as `SKAFOS_ORG_NAME`.
         * *app_name* (``str``) --
-            Required. Skafos app name associated with the above organization.
             If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
         * *model_name* (``str``) --
-            Required. Skafos model name associated with the above organization and app.
             If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
 
     :return:

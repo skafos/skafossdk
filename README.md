@@ -46,6 +46,31 @@ For more details on installation and usage, see the package documentation.
 and manages machine learning models on mobile devices.
 
 
+## Example: Uploading a Model Version
+
+```python
+import os
+import skafos
+from skafos import models
+
+# Set your API Token first for repeated use
+os.environ["SKAFOS_API_TOKEN"] = "<your-skafos-api-token>"
+
+# You can retrieve this info with skafos.summary()
+org_name = "<your-skafos-organization-name>" # Example: "mike-gmail-com-467h2"
+app_name = "<your-skafos-app-name>"          # Example: "Recommender-App"
+model_name = "<your-model-name>"             # Example: "RecommenderModel"
+
+# Upload model version to Skafos
+model_upload_result = models.upload_version(
+    files="<path(s)-to-model-file(s)>", # Example: ["../my_recommender_model.mlmodel"]
+    org_name=org_name,
+    app_name=app_name,
+    model_name=model_name
+)
+```
+
+
 ## Need Help?
 Didn't find something you need? Confused by something? Need more guidance?
 

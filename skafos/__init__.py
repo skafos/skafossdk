@@ -9,7 +9,8 @@ __all__ = ['models', 'exceptions']
 
 
 # Some Skafos Utility Functions
-from .http import *
+import os
+from .http import http_request, API_BASE_URL
 from .exceptions import *
 
 

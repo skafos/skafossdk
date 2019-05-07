@@ -67,7 +67,19 @@ def upload_version(files, description=None, **kwargs) -> dict:
         filelist = [files]
 
     # Create zipped filename
-    zip_name = params["model_name"] if params["model_name"][-4:] == ".zip" else f"{params['model_name']}.zip"
+    zip_name = params["model_name"] if params["model_name"].endswith(".zip") else f"{params['model_name']}.zip"
+    body = {"filename": zip_name}
+
+    # Check that they
+    if description and isinstance(description, str):
+        if len(description) > 255:
+            raise InvalidParamError("Description too long. Please provide a description that is less than 255 characters")
+        else:
+            body["description"] = description
+    if description and not isinstance(description, str):
+        raise InvalidParamError(f"Please provide a model version description with type = str")
+
+    # Write the zip file
     with zipfile.ZipFile(zip_name, "w", zipfile.ZIP_DEFLATED) as skazip:
         for zfile in filelist:
             if os.path.isdir(zfile):
@@ -77,23 +89,10 @@ def upload_version(files, description=None, **kwargs) -> dict:
             elif os.path.isfile(zfile):
                 skazip.write(zfile)
             else:
-                raise InvalidParamError \
-                    ("We were unable to find that file. Check to make sure that file is in your working directory.")
+                raise InvalidParamError(f"We were unable to find {zfile}. Check to make sure that the file path is correct.")
 
     # Create endpoint
     endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/"
-
-    # Create request body
-    body = {"filename": zip_name}
-    if description and isinstance(description, str):
-        if len(description) > 255:
-            raise InvalidParamError \
-                ("Description too long. Please provide a description that is less than 255 characters")
-        else:
-            body["description"] = description
-    if description and not isinstance(description, str):
-        raise InvalidParamError \
-            (f"You provided a description with Type: {type(description)}. Please provide a description with Type: str")
 
     # Create a model version
     model_version_res = http_request(

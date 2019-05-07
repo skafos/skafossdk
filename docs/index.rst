@@ -8,7 +8,7 @@
 Skafos SDK Documentation
 ________________________
 
-.. image:: ../resources/skafos_mark.jpg
+.. image:: https://raw.githubusercontent.com/skafos/skafossdk/0.1.0.dev1/resources/skafos_mark.jpg
    :width: 50px
    :height: 50px
    :align: left

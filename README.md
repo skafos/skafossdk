@@ -1,5 +1,5 @@
 # Skafos Python SDK
-<img src="resources/skafos_mark.jpg" width="50" height="50" align="left"/>
+<img src="https://raw.githubusercontent.com/skafos/skafossdk/0.1.0.dev1/resources/skafos_mark.jpg" width="50" height="50" align="left"/>
 
 [Skafos](https://skafos.ai) is the platform for automating the delivery of machine learning models to mobile devices.
 We provide this SDK as a Python wrapper for uploading, fetching, and listing model versions from the platform. 

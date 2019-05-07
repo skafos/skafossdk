@@ -22,7 +22,7 @@ Skafos SDK Documentation
 
    reference/models.rst
    reference/exceptions.rst
-   reference/skafos.rst
+   reference/utilities.rst
 
 .. toctree::
    :maxdepth: 1

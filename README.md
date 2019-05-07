@@ -41,7 +41,7 @@ For more details on installation and usage, see the package documentation.
 
 
 ## Documentation
-- The [package documentation](https://...) contains more details on how to use the Skafos SDK.
+- The [package documentation](https://sdk.skafos.ai) contains more details on how to use the Skafos SDK.
 - The [platform documentation](https://docs.metismachine.io) contains more details on how Skafos delivers
 and manages machine learning models on mobile devices.
 

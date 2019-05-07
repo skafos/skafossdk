@@ -9,7 +9,7 @@ All endpoints use `SKAFOS_API_TOKEN` supplied in the header for authentication.
 Upload a file, or list of files, compress them to a zip, then hit 2 endpoints:
 
 **First Call:**
-Create model version record in postgres and return the s3 pre-signed URL. Model version id 
+Create model version record in DB and return the s3 pre-signed URL. Model version id 
 and filepath left empty in DB until after successful upload to s3. 
 
 How will the user know the model_id?
@@ -33,7 +33,7 @@ Upload model to s3: `s3://skafos.staging-mlmodels/<org-id>/<app-id>/<model-id>/<
 - Response: 200 is returned on success no body
 
 **Third Call:**
-Update the model version record in postgres after successful write to s3.
+Update the model version record in DB after successful write to s3.
 
 - Request: `PATCH`
 - Path: `/organizations/<org-name-or-id>/apps/<app-name-or-id>/models/<model-name-or-id>/model_versions/<model-version-id>` model_version_id form first request

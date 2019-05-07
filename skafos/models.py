@@ -106,11 +106,11 @@ def upload_version(files, description=None, **kwargs) -> dict:
     if model_version_res.get("presigned_url"):
         with open(zip_name, "rb") as data:
             model_data = data.read()
-
         logger.info("Uploading model version to Skafos.")
         upload_res = http_request(
             method="PUT",
             url=model_version_res["presigned_url"],
+            header={"Content-Type": "application/octet-stream"},
             payload=model_data,
             api_token=params["skafos_api_token"]
         )

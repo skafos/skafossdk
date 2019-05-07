@@ -7,14 +7,14 @@ with open('skafos/VERSION', 'r') as v:
     VERSION = v.read().strip()
 
 with open('requirements.txt', 'r') as r:
-    REQS = [req.replace('\n', '') for req in r.readlines()]
+    REQS = r.read().splitlines()
 
 setuptools.setup(
   name="skafos",
   packages=setuptools.find_packages(),
   version=VERSION,
-  license="MIT",  # Chose a license from here: https://help.github.com/articles/licensing-a-repository
-  description=DESCRIPTION,
+  license="Apache Software License",
+  description="Python wrapper for loading, fetching, and listing model versions with the Skafos platform.",
   long_description=DESCRIPTION,
   long_description_content_type="text/markdown",
   author="Skafos, LLC",
@@ -26,7 +26,7 @@ setuptools.setup(
   classifiers=[
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
-    'License :: OSI Approved :: MIT License',
+    'License :: OSI Approved :: Apache Software License',
     'Programming Language :: Python :: 3'
   ],
   project_urls={
@@ -35,6 +35,5 @@ setuptools.setup(
     "Source": "https://github.com/skafos/skafossdk",
     "Website": "https://skafos.ai"
   },
-  python_requires=">=3",
-
+  python_requires=">=3"
 )

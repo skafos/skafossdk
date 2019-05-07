@@ -51,21 +51,22 @@ def generate_required_params(args):
     return params
 
 
-def http_request(method, url, api_token, timeout=None, payload=None, stream=False):
+def http_request(method, url, api_token, header=None, timeout=None, payload=None, stream=False):
     # Check that we ae using an appropriate request type
     if method not in HTTP_VERBS:
         raise requests.exceptions.HTTPError("Must use an appropriate HTTP verb")
 
     # Prepare headers and timeout
-    header = {"X-API-TOKEN": api_token, "Content-Type": "application/json"}
-    if method == "PUT":
-        header["Content-Type"] = "application/octet-stream"
+    request_header = {"X-API-TOKEN": api_token, "Content-Type": "application/json"}
+    # Update request header with optionally provided header
+    if header and isinstance(header, dict):
+        request_header.update(header)
     if not timeout:
         timeout = DEFAULT_TIMEOUT
 
+    # Prepare request object and send it
     try:
-        # Prepare request object and send it
-        req = requests.Request(method, url, headers=header, data=payload)
+        req = requests.Request(method, url, headers=request_header, data=payload)
         r = req.prepare()
         with requests.Session() as s:
             logger.debug(f"Sending prepared request with url: {url}")

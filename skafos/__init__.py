@@ -1,3 +1,14 @@
+"""
+Skafos Python SDK
+=================
+"""
+
+
+# Define package modules to expose
+__all__ = ['models', 'exceptions']
+
+
+# Some Skafos Utility Functions
 from .http import *
 from .exceptions import *
 

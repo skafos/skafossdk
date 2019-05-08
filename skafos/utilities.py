@@ -24,7 +24,7 @@ def summary(skafos_api_token=None) -> dict:
 
     :param skafos_api_token:
         Skafos API Token associated with the user account. Checks environment for 'SKAFOS_API_TOKEN' if not passed
-        into the function directly. Get one at https://skafos.ai --> Settings --> Tokens.
+        into the function directly. Get one at https://dashboard.skafos.ai --> Account Settings --> Tokens.
     :type skafos_api_token:
         str or None
     :return:

@@ -5,8 +5,8 @@ import logging
 from .exceptions import *
 
 
-API_BASE_URL = "https://api.skafos.wtf/v2"  # production: https://api.skafos.ai/v2
-DOWNLOAD_BASE_URL = "https://download.skafos.wtf/v2"  # production: https://download.skafos.ai/v2
+API_BASE_URL = "https://api.skafos.ai/v2"
+DOWNLOAD_BASE_URL = "https://download.skafos.ai/v2"
 HTTP_VERBS = ["GET", "POST", "PUT", "PATCH"]
 DEFAULT_TIMEOUT = 120
 logger = logging.getLogger(name="skafos")

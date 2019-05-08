@@ -17,8 +17,13 @@ saved to the Skafos platform.
 
 
 ## Supported Platforms
+
+#### Operating Systems
+This is not an exhaustive list of OS that are compatible with `skafos`. These are the one's we've explicitly tested:
 - macOS 10.12+
-- Linux (?)
+- Linux (Ubuntu 16.0.4)
+
+#### Cloud Platforms
 
 
 ## System Requirements

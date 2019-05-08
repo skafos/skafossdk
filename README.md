@@ -50,7 +50,6 @@ and manages machine learning models on mobile devices.
 
 ```python
 import os
-import skafos
 from skafos import models
 
 # Set your API Token first for repeated use

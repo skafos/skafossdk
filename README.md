@@ -58,12 +58,12 @@ import os
 from skafos import models
 
 # Set your API Token first for repeated use
-os.environ["SKAFOS_API_TOKEN"] = "<your-skafos-api-token>"
+os.environ["SKAFOS_API_TOKEN"] = "<YOUR-SKAFOS-API-TOKEN>"
 
 # You can retrieve this info with skafos.summary()
-org_name = "<your-skafos-organization-name>" # Example: "mike-gmail-com-467h2"
-app_name = "<your-skafos-app-name>"          # Example: "Recommender-App"
-model_name = "<your-model-name>"             # Example: "RecommenderModel"
+org_name = "<YOUR-SKAFOS-ORG-NAME>"    # Example: "mike-gmail-com-467h2"
+app_name = "<YOUR-SKAFOS-APP-NAME>"    # Example: "Recommender-App"
+model_name = "<YOUR-MODEL-NAME>"       # Example: "RecommenderModel"
 
 # Upload model version to Skafos
 model_upload_result = models.upload_version(

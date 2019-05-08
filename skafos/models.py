@@ -68,7 +68,7 @@ def upload_version(files, description=None, **kwargs) -> dict:
         filelist = [files]
 
     # Create zipped filename
-    zip_name = params["model_name"] if params["model_name"].endswith(".zip") else f"{params['model_name']}.zip"
+    zip_name = params["model_name"] if params["model_name"].endswith(".zip") else "{}.zip".format(params['model_name'])
     body = {"filename": zip_name}
 
     # Check that they
@@ -78,7 +78,7 @@ def upload_version(files, description=None, **kwargs) -> dict:
         else:
             body["description"] = description
     if description and not isinstance(description, str):
-        raise InvalidParamError(f"Please provide a model version description with type = str")
+        raise InvalidParamError("Please provide a model version description with type = str")
 
     # Write the zip file
     with zipfile.ZipFile(zip_name, "w", zipfile.ZIP_DEFLATED) as skazip:
@@ -90,10 +90,10 @@ def upload_version(files, description=None, **kwargs) -> dict:
             elif os.path.isfile(zfile):
                 skazip.write(zfile)
             else:
-                raise InvalidParamError(f"We were unable to find {zfile}. Check to make sure that the file path is correct.")
+                raise InvalidParamError("We were unable to find {}. Check to make sure that the file path is correct.".format(zfile))
 
     # Create endpoint
-    endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/"
+    endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/".format(**params)
 
     # Create a model version
     model_version_res = http_request(
@@ -107,7 +107,7 @@ def upload_version(files, description=None, **kwargs) -> dict:
     if model_version_res.get("presigned_url"):
         with open(zip_name, "rb") as data:
             model_data = data.read()
-        logger.info("Uploading model version to Skafos.")
+        logger.info("Uploading model version to Skafos")
         upload_res = http_request(
             method="PUT",
             url=model_version_res["presigned_url"],
@@ -120,7 +120,7 @@ def upload_version(files, description=None, **kwargs) -> dict:
 
     # Update the model version with the file path
     if upload_res.status_code == 200:
-        model_version_endpoint = endpoint + f"model_versions/{model_version_res['model_version_id']}"
+        model_version_endpoint = endpoint + "model_versions/{model_version_id}".format(**model_version_res)
         data = {"filepath": model_version_res["filepath"]}
         final_model_version_res = http_request(
             method="PATCH",
@@ -132,7 +132,7 @@ def upload_version(files, description=None, **kwargs) -> dict:
         raise UploadFailedError("Upload failed.")
 
     # Return cleaned response JSON to the user
-    logger.info("\nSuccessful Upload:")
+    logger.info("\nSuccessful Upload\n")
     meta = {k: final_model_version_res[k] for k in final_model_version_res.keys() & {"version", "description", "name", "model"}}
     return meta
 
@@ -193,14 +193,15 @@ def fetch_version(version=None, **kwargs):
         raise DownloadFailedError("A zip file already exists in your working directory with the model name you're trying to download.")
 
     # Get model version and create endpoint.
-    if not version:
-        endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}"
-    elif isinstance(version, int):
-        endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}?version={version}"
-    else: # You passed in some garbage and so we need to throw an error
-        raise InvalidParamError("If specified, the model version must be an integer.")
+    endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}".format(**params)
+    if version:
+        if isinstance(version, int):
+            endpoint += "?version={}".format(version)
+        else:  # You passed in a non-supported version
+            raise InvalidParamError("If specified, the model version must be an integer.")
 
     # Download the model
+    logger.info("Fetching model")
     method = "GET"
     res = http_request(
         method=method,
@@ -211,7 +212,7 @@ def fetch_version(version=None, **kwargs):
 
     # Log message
     if res.status_code == 200:
-        print("File downloaded.", flush=True)
+        logger.info("Downloaded as {}".format(params["model_name"] + ".zip"))
 
 
 def list_versions(**kwargs) -> list:
@@ -250,7 +251,7 @@ def list_versions(**kwargs) -> list:
        )
     """
     params = generate_required_params(kwargs)
-    endpoint = f"/organizations/{params['org_name']}/apps/{params['app_name']}/models/{params['model_name']}/model_versions?order_by=version"
+    endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/model_versions?order_by=version".format(**params)
     res = http_request(
         method="GET",
         url=API_BASE_URL + endpoint,

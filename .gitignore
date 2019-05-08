@@ -1,2 +1,9 @@
 *.idea/
-docs/*
+*__pycache__
+*.DS_STORE
+*_build/
+*_static/
+*_template/
+skafos.egg-info/
+dist/
+build/

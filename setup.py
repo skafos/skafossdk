@@ -1,33 +1,42 @@
-from distutils.core import setup
+import os
+import setuptools
 
-with open('skafos/DESCRIPTION', 'r') as d:
-  DESCRIPTION = d.read().strip()
 
-with open('skafos/VERSION', 'r') as v:
-    VERSION = v.read().strip()
+def read(fname):
+  """Utility function to read the README and VERSION files."""
+  return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
 
 with open('requirements.txt', 'r') as r:
-    REQS = [req.replace('\n', '') for req in r.readlines()]
+    REQS = r.read().splitlines()
 
-setup(
-  name='skafos',
-  packages=['skafos'],
-  version=VERSION,
-  license='MIT',  # Chose a license from here: https://help.github.com/articles/licensing-a-repository
-  description=DESCRIPTION,
-  author='Skafos, LLC',
-  author_email='skafos@skafos.ai',
-  url='https://github.com/skafos/skafossdk',
+
+setuptools.setup(
+  name="skafos",
+  packages=setuptools.find_packages(),
+  version=read('skafos/VERSION'),
+  license="Apache Software License",
+  description="Python wrapper for loading, fetching, and listing model versions with the Skafos platform.",
+  long_description=read('README.md'),
+  long_description_content_type="text/markdown",
+  author="Skafos, LLC",
+  author_email="skafos@skafos.ai",
+  url="https://github.com/skafos/skafossdk",
   download_url='',
   keywords=['machine learning delivery', 'mobile deployment', 'model versioning'],
   install_requires=REQS,
+  include_package_data=True,
   classifiers=[
-    'Development Status :: 3 - Alpha',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package
-    'Intended Audience :: Developers',      # Define that your audience are developers
-    'Topic :: Software Development :: Build Tools',
-    'License :: OSI Approved :: MIT License',   # Again, pick a license
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7'
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: Apache Software License',
+    'Programming Language :: Python :: 3'
   ],
+  project_urls={
+    "Dashboard": "https://dashboard.skafos.ai",
+    "SDK Documentation": "https://sdk.skafos.ai",
+    "Source": "https://github.com/skafos/skafossdk",
+    "Website": "https://skafos.ai"
+  },
+  python_requires=">=3"
 )

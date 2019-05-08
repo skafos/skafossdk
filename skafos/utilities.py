@@ -14,7 +14,7 @@ def get_version():
        skafos.get_version()
 
     """
-    with open(os.path.join(os.path.dirname(__file__),  'VERSION')) as version_file:
+    with open(os.path.join(os.path.dirname(__file__),  "VERSION")) as version_file:
         return version_file.read().strip()
 
 
@@ -37,7 +37,7 @@ def summary(skafos_api_token=None) -> dict:
 
        import skafos
 
-       skafos.summary(skafos_api_token="<your-skafos-api-token>")
+       skafos.summary(skafos_api_token="<YOUR-SKAFOS-API-TOKEN>")
     """
     summary_res = {}
 
@@ -57,7 +57,7 @@ def summary(skafos_api_token=None) -> dict:
     ).json()
     for org in res:
         summary_res[org["display_name"]] = {}
-        endpoint = f"/organizations/{org['display_name']}/apps?with_models=true"
+        endpoint = "/organizations/{}/apps?with_models=true".format(org["display_name"])
         res = http_request(
             method=method,
             url=API_BASE_URL + endpoint,

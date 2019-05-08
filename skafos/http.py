@@ -69,7 +69,7 @@ def http_request(method, url, api_token, header=None, timeout=None, payload=None
         req = requests.Request(method, url, headers=request_header, data=payload)
         r = req.prepare()
         with requests.Session() as s:
-            logger.debug(f"Sending prepared request with url: {url}")
+            logger.debug("Sending prepared request with url: {}".format(url))
             if stream and method == "GET":
                 with s.send(r, timeout=timeout, stream=True) as response:
                     response.raise_for_status()
@@ -82,7 +82,7 @@ def http_request(method, url, api_token, header=None, timeout=None, payload=None
                 response = s.send(r, timeout=timeout)
                 response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        logger.debug(f"HTTP Error: {err}")
+        logger.debug("HTTP Error: {}".format(err))
         if response.status_code == 401:
             # We know what it is - raise proper exception to user
             raise InvalidTokenError("Invalid Skafos API Token")
@@ -92,13 +92,13 @@ def http_request(method, url, api_token, header=None, timeout=None, payload=None
         else:
             raise
     except requests.exceptions.ConnectionError as err:
-        logger.debug(f"Error connecting to server: {err}")
+        logger.debug("Error connecting to server: {}".format(err))
         raise
     except requests.exceptions.Timeout:
-        logger.debug(f"Request timed out at {timeout} seconds, consider increasing timeout")
+        logger.debug("Request timed out at {} seconds, consider increasing timeout".format(timeout))
         raise
     except requests.exceptions.RequestException as err:
-        logger.debug(f"Oops, got some other error: {err}")
+        logger.debug("Oops, got some other error: {}".format(err))
         raise
 
     # Return response

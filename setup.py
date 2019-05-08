@@ -27,7 +27,7 @@ setuptools.setup(
   install_requires=REQS,
   include_package_data=True,
   classifiers=[
-    'Development Status :: 3 - Alpha',
+    'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
     'License :: OSI Approved :: Apache Software License',
     'Programming Language :: Python :: 3'

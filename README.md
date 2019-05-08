@@ -21,10 +21,12 @@ saved to the Skafos platform.
 #### Operating Systems
 This is not an exhaustive list of OS that are compatible with `skafos`. These are the one's we've explicitly tested:
 - macOS 10.12+
-- Linux (Ubuntu 16.0.4)
+- Linux (Ubuntu 16.0.4+)
 
 #### Cloud Platforms
-
+- Google Colab
+- IBM Watson
+- *Others coming soon*
 
 ## System Requirements
 - Python 3+

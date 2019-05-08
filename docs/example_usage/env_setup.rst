@@ -1,11 +1,11 @@
 Setting Up Your Environment
 ---------------------------
-While using the Skafos SDK, here are a few tips for getting your environment setup so you can work most efficiently.
+While using the Skafos SDK, here are a few tips for getting your environment set up so you can work most efficiently.
 
 
 Authorization
 =============
-All Skafos API calls require authentication through an API Token. You can find or delete to your token on the
+All Skafos API calls require authentication through an API Token. You can find or delete your token on the
 dashboard's account settings page. Once you have it, we recommend setting it in your environment as follows:
 
 .. sourcecode:: python
@@ -22,7 +22,7 @@ Which Org, App, Model?
 ======================
 All model version management utilities require you to identify which organization, application, and model you
 would like to access. If you are unsure of these details, you can use :func:`skafos.summary()` to
-discover that information provided an API Token (as described above).
+discover that information provided you have set an API Token (as described above).
 
 .. sourcecode:: python
 
@@ -39,7 +39,7 @@ We suggest one of two approaches to efficiently use the Skafos SDK.
 
 **Using Environment Variables**
 
-Similar to the API Token, you can also set different environment variables for your org name, app name, and model name.
+Similar to the API Token, you can set environment variables for your org name, app name, and model name.
 
 .. sourcecode:: python
 

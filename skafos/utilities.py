@@ -75,13 +75,15 @@ def summary(skafos_api_token=None, compact=False) -> dict:
         ).json()
         for app in res:
             if not compact:
-                org_dict["app_name"]= app["name"]
+                app_dict = org_dict.copy()
+                app_dict["app_name"]= app["name"]
             else:
                 summary_res[org["display_name"]][app["name"]] = []
             for model in app["models"]:
                 if not compact:
-                    org_dict["model_name"] = model["name"]
-                    summary_res.append(org_dict)
+                    model_dict = app_dict.copy()
+                    model_dict["model_name"] = model["name"]
+                    summary_res.append(model_dict)
                 else:
                     model_meta_data = {k: model[k] for k in model.keys() & {"name", "updated_at"}}
                     summary_res[org["display_name"]][app["name"]].append(model_meta_data)

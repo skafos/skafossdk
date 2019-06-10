@@ -88,7 +88,10 @@ def http_request(method, url, api_token, header=None, timeout=None, payload=None
             raise InvalidTokenError("Invalid Skafos API Token")
         elif response.status_code == 404:
             # We know what it is - raise proper exception to user
-            raise InvalidParamError("Invalid param passed to function. Check your org name, app name, or model name")
+            if "download" in url:
+                raise DownloadFailedError("Model version download failed. Check parameters and that a version actually exists for this model.")
+            else:
+                raise InvalidParamError("Invalid connection parameters. Check your org name, app name, and model name.")
         else:
             raise
     except requests.exceptions.ConnectionError as err:
@@ -104,4 +107,3 @@ def http_request(method, url, api_token, header=None, timeout=None, payload=None
     # Return response
     logger.debug("Got a 200 from the server")
     return response
-

@@ -26,6 +26,8 @@ setuptools.setup(
   keywords=['machine learning delivery', 'mobile deployment', 'model versioning'],
   install_requires=REQS,
   include_package_data=True,
+  test_suite='nose.collector',
+  tests_require=['nose'],
   classifiers=[
     'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',

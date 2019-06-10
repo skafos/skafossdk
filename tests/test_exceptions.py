@@ -1,4 +1,5 @@
 import pytest
+from time import sleep
 
 import skafos
 from skafos import models
@@ -13,6 +14,7 @@ class TestExceptions(object):
 
     # Force another token error
     def test_invalid_token(self):
+        sleep(2)
         with pytest.raises(InvalidTokenError):
             skafos.summary(skafos_api_token="fake-token")
 

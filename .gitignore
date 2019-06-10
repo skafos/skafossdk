@@ -7,4 +7,5 @@
 skafos.egg-info/
 dist/
 build/
+*.eggs
 *.pytest_cache

@@ -4,7 +4,7 @@ from .exceptions import InvalidTokenError
 
 
 def get_version():
-    """Returns the current version of the Skafos SDK in use.
+    r"""Returns the current version of the Skafos SDK in use.
 
     :Usage:
     .. sourcecode:: python
@@ -18,7 +18,7 @@ def get_version():
 
 
 def summary(skafos_api_token=None, compact=False) -> dict:
-    """
+    r"""
     Returns all Skafos organizations, apps, and models that the provided API token has access to.
 
     :param skafos_api_token:

@@ -10,7 +10,7 @@ logger = logging.getLogger("skafos")
 
 
 def upload_version(files, description=None, **kwargs) -> dict:
-    """
+    r"""
     Upload a model version (one or more files) for a specific app and model to Skafos. All files
     are automatically zipped together and uploaded to storage. Once successfully uploaded, a dictionary
     of meta data is returned.
@@ -138,7 +138,7 @@ def upload_version(files, description=None, **kwargs) -> dict:
 
 
 def fetch_version(version=None, **kwargs):
-    """
+    r"""
     Download a model version as a zipped archive for a specific app and model from Skafos to your current
     working directory as `<model_name>.zip`.
 
@@ -216,7 +216,7 @@ def fetch_version(version=None, **kwargs):
 
 
 def list_versions(**kwargs) -> list:
-    """
+    r"""
     Return a list of all saved model versions based on organization, app name, and model name.
 
     :param \**kwargs:

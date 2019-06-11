@@ -5,9 +5,7 @@ import logging
 from .http import *
 from .exceptions import *
 
-
-logger = logging.getLogger("skafos")
-
+logger = logging.getLogger("skafos.models")
 
 def upload_version(files, description=None, **kwargs) -> dict:
     r"""

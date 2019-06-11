@@ -3,18 +3,20 @@ import setuptools
 
 
 def read(fname):
-  """Utility function to read the README and VERSION files."""
-  return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    """Utility function to read the README and VERSION files."""
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
 with open('requirements.txt', 'r') as r:
     REQS = r.read().splitlines()
 
+VERSION = os.environ['PLUGIN_VERSION'] if 'PLUGIN_VERSION' in os.environ else read(
+    'skafos/VERSION') + os.environ.get('PLUGIN_COMMIT_SHA', '')
 
 setuptools.setup(
   name="skafos",
   packages=setuptools.find_packages(),
-  version=read("skafos/VERSION"),
+  version=VERSION,
   license="Apache Software License",
   description="Python wrapper for loading, fetching, and listing model versions with the Skafos platform.",
   long_description=read("README.md"),

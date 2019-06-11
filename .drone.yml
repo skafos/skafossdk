@@ -1,0 +1,48 @@
+---
+
+kind: pipeline
+name: skafossdk
+
+steps:
+  - name: publish_stable
+    image: plugins/pypi
+    settings:
+      version: "${DRONE_TAG}"
+      username: ""
+      password: ""
+      distribution:
+        - sdist
+        - bdist_wheel
+      skip_build: false
+    when:
+      status:
+        - success
+      event:
+        - tag
+      ref:
+        - refs/tags/*
+  - name: publish_dev
+    image: plugins/pypi
+    settings:
+      commit_sha: "${DRONE_COMMIT_SHA:0:7}"
+      repository: "https://test.pypi.org/legacy/"
+      username: ""
+      password: ""
+      distribution:
+        - sdist
+        - bdist_wheel
+      skip_build: false
+    when:
+      status:
+        - success
+      event:
+        - push
+      branch:
+        - master
+  - name: slack
+    image: plugins/slack
+    channel: builds
+    username: Drone
+    secrets: [slack_webhook]
+    when:
+      status: [success, failure]

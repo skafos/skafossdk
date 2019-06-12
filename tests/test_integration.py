@@ -1,7 +1,9 @@
+import pytest
 import skafos
 from skafos import models
-from skafos.http import generate_required_params
+from skafos.exceptions import *
 from constants import *
+
 
 PARAMS = {
     'skafos_api_token': TESTING_API_TOKEN,
@@ -9,18 +11,8 @@ PARAMS = {
     'app_name': TESTING_APP
 }
 
-class TestMethods(object):
 
-    def test_version(self):
-        v = skafos.get_version()
-        assert isinstance(v, str)
-
-    # Test generating required PARAMS
-    def test_generate_params(self):
-        required_keys = ["app_name", "org_name", "app_name", "model_name"]
-        res = generate_required_params({**PARAMS, **{"model_name": "test_model"}})
-        # Check for required keys
-        assert all(key in res.keys() for key in required_keys)
+class TestIntegration(object):
 
     def test_compact_summary(self):
         response = skafos.summary(skafos_api_token=TESTING_API_TOKEN, compact=True)
@@ -54,3 +46,16 @@ class TestMethods(object):
         # Check response type and verfiy that nothing comes back
         assert isinstance(res, list)
         assert len(res) == 0
+
+    # Test another token error by using a fake token
+    def test_summary_invalid_token(self):
+        with pytest.raises(InvalidTokenError):
+            skafos.summary(skafos_api_token=TESTING_FAKE_TOKEN)
+
+    # Test a failing download due to empty model version
+    def test_fetch_failed_download(self):
+        with pytest.raises(DownloadFailedError):
+            res = models.fetch_version(
+                model_name=TESTING_MODEL_EMPTY,
+                **PARAMS
+            )

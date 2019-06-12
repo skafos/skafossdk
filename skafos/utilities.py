@@ -1,5 +1,5 @@
 import os
-from .http import http_request, API_BASE_URL
+from .http import _http_request, API_BASE_URL
 from .exceptions import InvalidTokenError
 
 
@@ -17,7 +17,45 @@ def get_version():
         return version_file.read().strip()
 
 
-def summary(skafos_api_token=None, compact=False) -> dict:
+def _get_organization_models(org_name, api_token):
+    endpoint = "/organizations/{}/apps?with_models=true".format(org_name)
+    res = _http_request(
+        method="GET",
+        url=API_BASE_URL + endpoint,
+        api_token=api_token
+    ).json()
+    return res
+
+
+def _full_summary(organizations, api_token):
+    summary_res = []
+    for org in organizations:
+        org_dict = {"org_name": org["display_name"]}
+        apps = _get_organization_models(org_name=org["display_name"], api_token=api_token)
+        for app in apps:
+            app_dict = org_dict.copy()
+            app_dict["app_name"]= app["name"]
+            for model in app["models"]:
+                model_dict = app_dict.copy()
+                model_dict["model_name"] = model["name"]
+                summary_res.append(model_dict)
+    return summary_res
+
+
+def _compact_summary(organizations, api_token):
+    summary_res = {}
+    for org in organizations:
+        summary_res[org["display_name"]] = {}
+        apps = _get_organization_models(org_name=org["display_name"], api_token=api_token)
+        for app in apps:
+            summary_res[org["display_name"]][app["name"]] = []
+            for model in app["models"]:
+                model_meta_data = {k: model[k] for k in model.keys() & {"name", "updated_at"}}
+                summary_res[org["display_name"]][app["name"]].append(model_meta_data)
+    return summary_res
+
+
+def summary(skafos_api_token=None, compact=False):
     r"""
     Returns all Skafos organizations, apps, and models that the provided API token has access to.
 
@@ -28,26 +66,22 @@ def summary(skafos_api_token=None, compact=False) -> dict:
         str or None
     :param compact:
         If True, will return a collapsed version of the summary dictionary response. If False (default), will return a
-        fully-exploded response as a list of dictionaries including key names.
+        full response as a list of dictionaries including key names.
     :type compact:
         boolean
     :return:
-        Nested dictionary of all organizations, apps, and models this user has access to.
+        List or nested dictionary (compact version) of all organizations, apps, and models this user has access to.
 
     :Usage:
     .. sourcecode:: python
 
        import skafos
 
-       skafos.summary(skafos_api_token="<YOUR-SKAFOS-API-TOKEN>")
-    """
-    # TODO - add sample response to docstring above
-    # If not compact, return a list of dictionaries
-    if not compact:
-        summary_res = []
-    else:
-        summary_res = {}
+       skafos.summary(skafos_api_token="<YOUR-SKAFOS-API-TOKEN>", compact=False)
 
+       [{"org_name": "my-organization", "app_name": "my-application", "model_name": "my-model"},
+        {"org_name": "my-organization", "app_name": "my-application", "model_name": "my-other-model"}]
+    """
     # Check for api token first
     if not skafos_api_token:
         skafos_api_token = os.getenv("SKAFOS_API_TOKEN")
@@ -57,36 +91,16 @@ def summary(skafos_api_token=None, compact=False) -> dict:
     # Prepare requests
     method = "GET"
     endpoint = "/organizations"
-    res = http_request(
+    res = _http_request(
         method=method,
         url=API_BASE_URL + endpoint,
         api_token=skafos_api_token
     ).json()
-    for org in res:
-        if not compact:
-            org_dict = {"org_name": org["display_name"]}
-        else:
-            summary_res[org["display_name"]] = {}
-        endpoint = "/organizations/{}/apps?with_models=true".format(org["display_name"])
-        res = http_request(
-            method=method,
-            url=API_BASE_URL + endpoint,
-            api_token=skafos_api_token
-        ).json()
-        for app in res:
-            if not compact:
-                app_dict = org_dict.copy()
-                app_dict["app_name"]= app["name"]
-            else:
-                summary_res[org["display_name"]][app["name"]] = []
-            for model in app["models"]:
-                if not compact:
-                    model_dict = app_dict.copy()
-                    model_dict["model_name"] = model["name"]
-                    summary_res.append(model_dict)
-                else:
-                    model_meta_data = {k: model[k] for k in model.keys() & {"name", "updated_at"}}
-                    summary_res[org["display_name"]][app["name"]].append(model_meta_data)
+
+    if not compact:
+        summary_res = _full_summary(organizations=res, api_token=skafos_api_token)
+    else:
+        summary_res = _compact_summary(organizations=res, api_token=skafos_api_token)
 
     # Return the summary response to the user
     return summary_res

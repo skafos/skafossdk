@@ -43,8 +43,12 @@ steps:
         - master
   - name: slack
     image: plugins/slack
-    channel: builds
-    username: Drone
-    secrets: [slack_webhook]
+    settings:
+      channel: builds
+      username: Drone
+      webhook:
+        from_secret: slack_webhook
     when:
-      status: [success, failure]
+      status:
+        - success
+        - failure

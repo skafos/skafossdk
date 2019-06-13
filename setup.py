@@ -12,10 +12,10 @@ with open('requirements.txt', 'r') as r:
 if "PLUGIN_VERSION" in os.environ:
     VERSION = os.environ["PLUGIN_VERSION"]
 else:
-    VERSION = read("skafos/VERSION")
-
-if "PLUGIN_COMMIT_SHA" in os.environ:
-    VERSION += "-" + os.environ["PLUGIN_COMMIT_SHA"]
+    if "PLUGIN_BUILD_NUMBER" in os.environ:
+        VERSION = read("skafos/VERSION") + ".dev" + os.environ["PLUGIN_BUILD_NUMBER"]
+    else:
+        VERSION = read("skafos/VERSION")
 
 setuptools.setup(
   name="skafos",

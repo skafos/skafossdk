@@ -28,8 +28,10 @@ steps:
     settings:
       build_number: "${DRONE_BUILD_NUMBER}"
       repository: "https://test.pypi.org/legacy/"
-      username: ""
-      password: ""
+      username:
+        from_secret: pypi_username
+      password:
+        from_secret: pypi_password
       distribution:
         - sdist
         - bdist_wheel

@@ -116,6 +116,12 @@ def upload_version(files, description=None, verbose=True, **kwargs) -> dict:
            files="my_text_classifier.mlmodel",
            description="My model version upload to Skafos"
        )
+
+    :raises:
+        * `InvalidTokenError` - if improper API token is used or is missing entirely.
+        * `InvalidParamError` - if improper connection params are passed or a zip file exists in your working directory with the same name that Skafos tries to create before upload.
+        * `UploadFailedError` - if there's a local network or API related issue.
+
     """
     # Generate required connection params
     params = _generate_required_params(kwargs)
@@ -232,6 +238,12 @@ def fetch_version(version=None, **kwargs):
            model_name="<your-model>",
            version=2
        )
+
+    :raises:
+        * `InvalidTokenError` - if improper API token is used or is missing entirely.
+        * `InvalidParamError` - if improper connection parameters are passed or a zip file in your working directory exists with the same name that Skafos is trying to download.
+        * `DownloadFailedError` - if there's a local network or API related issue, or if no model version exists.
+
     """
     # Get required params
     params = _generate_required_params(kwargs)
@@ -277,6 +289,8 @@ def list_versions(**kwargs) -> list:
 
     :param \**kwargs:
         Keyword arguments identifying the organization, app, and model for version retrieval. See below.
+    :return:
+        List of dictionaries containing model versions that have been successfully uploaded to Skafos.
 
     :Keyword Args:
         * *skafos_api_token* (``str``) --
@@ -287,9 +301,6 @@ def list_versions(**kwargs) -> list:
             If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
         * *model_name* (``str``) --
             If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
-
-    :return:
-        List of dictionaries containing model versions that have been successfully uploaded to Skafos.
 
     :Usage:
     .. sourcecode:: python
@@ -303,6 +314,11 @@ def list_versions(**kwargs) -> list:
            app_name="<your-app>",
            model_name="<your-model>"
        )
+
+    :raises:
+        * `InvalidTokenError` - if improper API token is used or is missing entirely.
+        * `InvalidParamError` - if improper connection parameters are passed.
+
     """
     params = _generate_required_params(kwargs)
     endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/model_versions?order_by=version".format(**params)

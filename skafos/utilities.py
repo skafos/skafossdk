@@ -12,6 +12,7 @@ def get_version():
        import skafos
 
        skafos.get_version()
+
     """
     with open(os.path.join(os.path.dirname(__file__),  "VERSION")) as version_file:
         return version_file.read().strip()
@@ -59,6 +60,8 @@ def summary(skafos_api_token=None, compact=False):
     r"""
     Returns all Skafos organizations, apps, and models that the provided API token has access to.
 
+    .. note:: See the Usage Guide `Setting Up Your Environment` for some tips on using this function best within your workflow.
+
     :param skafos_api_token:
         Skafos API Token associated with the user account. Checks environment for 'SKAFOS_API_TOKEN' if not passed
         into the function directly. Get one at https://dashboard.skafos.ai --> Account Settings --> Tokens.
@@ -81,6 +84,10 @@ def summary(skafos_api_token=None, compact=False):
 
        [{"org_name": "my-organization", "app_name": "my-application", "model_name": "my-model"},
         {"org_name": "my-organization", "app_name": "my-application", "model_name": "my-other-model"}]
+
+    :raises:
+        * `InvalidTokenError` - if improper API token is used or is missing entirely.
+
     """
     # Check for api token first
     if not skafos_api_token:

@@ -4,7 +4,7 @@ import setuptools
 
 def read(fname):
     """Utility function to read the README and VERSION files."""
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    return open(os.path.join(os.path.dirname(__file__), fname)).read().strip('\n')
 
 with open('requirements.txt', 'r') as r:
     REQS = r.read().splitlines()

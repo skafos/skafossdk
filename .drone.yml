@@ -8,8 +8,10 @@ steps:
     image: plugins/pypi
     settings:
       version: "${DRONE_TAG}"
-      username: ""
-      password: ""
+      username:
+        from_secret: pypi_username
+      password:
+        from_secret: pypi_password
       distribution:
         - sdist
         - bdist_wheel

@@ -26,7 +26,7 @@ steps:
   - name: publish_dev
     image: plugins/pypi
     settings:
-      commit_sha: "${DRONE_COMMIT_SHA:0:7}"
+      build_number: "${DRONE_BUILD_NUMBER}"
       repository: "https://test.pypi.org/legacy/"
       username: ""
       password: ""

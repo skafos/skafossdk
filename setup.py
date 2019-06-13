@@ -6,12 +6,16 @@ def read(fname):
     """Utility function to read the README and VERSION files."""
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-
 with open('requirements.txt', 'r') as r:
     REQS = r.read().splitlines()
 
-VERSION = os.environ['PLUGIN_VERSION'] if 'PLUGIN_VERSION' in os.environ else read(
-    'skafos/VERSION') + os.environ.get('PLUGIN_COMMIT_SHA', '')
+if "PLUGIN_VERSION" in os.environ:
+    VERSION = os.environ["PLUGIN_VERSION"]
+else:
+    VERSION = read("skafos/VERSION")
+
+if "PLUGIN_COMMIT_SHA" in os.environ:
+    VERSION += "-" + os.environ["PLUGIN_COMMIT_SHA"]
 
 setuptools.setup(
   name="skafos",

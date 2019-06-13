@@ -23,4 +23,4 @@ Once installed you should be able to import skafos to your python env as follows
    skafos.get_version()
 
 
-.. warning:: The Skafos SDK is only compatible with Python 3.6+.
+.. warning:: The Skafos SDK is only compatible with Python 3+.

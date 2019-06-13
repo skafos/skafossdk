@@ -2,7 +2,7 @@
 <img src="https://raw.githubusercontent.com/skafos/skafossdk/master/resources/skafos_mark.jpg" width="50" height="50" align="left"/>
 
 [Skafos](https://skafos.ai) is the platform for automating the delivery of machine learning models to mobile devices.
-We provide this SDK as a Python wrapper for uploading, fetching, and listing model versions from the platform. 
+We provide this SDK as a Python wrapper for uploading, fetching, and listing model versions from the platform.
 
 If you're a Data Scientist or Machine Learning Engineer, you're the one entrusted with building robust machine
 learning models. This SDK is an interface to the Skafos platform, allowing you to do the
@@ -24,14 +24,14 @@ This is not an exhaustive list of OS that are compatible with `skafos`. These ar
 - Linux (Ubuntu 16.0.4+)
 
 #### Cloud Platforms
-- Google Colab
+- Google Colab + Google Cloud
 - IBM Watson
-- *Others coming soon*
+- AWS Sagemaker
+- Microsoft Azure
 
 ## System Requirements
 - Python 3+
 - [Pip](https://pip.pypa.io/en/stable/installing/) (to download `skafos` from the Python Package Index)
-
 
 ## Installation
 You can install `skafos` directly from the Python Package Index [(PyPI)](https://pypi.org/).
@@ -49,7 +49,7 @@ For more details on installation and usage, see the package documentation.
 
 ## Documentation
 - The [package documentation](https://sdk.skafos.ai) contains more details on how to use the Skafos SDK.
-- The [platform documentation](https://docs.metismachine.io) contains more details on how Skafos delivers
+- The [platform documentation](https://docs.skafos.ai) contains more details on how Skafos delivers
 and manages machine learning models on mobile devices.
 
 

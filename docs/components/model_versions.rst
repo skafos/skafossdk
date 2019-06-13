@@ -6,4 +6,4 @@ machine learning models when you upload them to the platform.
 
 .. note:: Do not get confused! A model version refers to a specific instance of a model (with the same :attr:`model_name`).
 
-Each model version has a generated :attr:`version` number that you should use to identify it.
+Each model version has a generated :attr:`version` number (monotonically increasing integer) that you should use to identify it.

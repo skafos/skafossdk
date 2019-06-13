@@ -1,7 +1,6 @@
 import os
 
-#TESTING_API_TOKEN = os.environ["SKAFOS_TEST_API_TOKEN"]
-TESTING_API_TOKEN = "3814a7ee8ade3675dab6cc61bf3ead6a"
+TESTING_API_TOKEN = os.environ["PLUGIN_SKAFOS_TEST_API_TOKEN"]
 TESTING_ORG = "skafos-sdk-testing"
 TESTING_APP = "test"
 TESTING_MODEL = "test"

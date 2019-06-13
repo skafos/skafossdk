@@ -129,14 +129,14 @@ def upload_version(files, description=None, verbose=True, **kwargs) -> dict:
     # Generate file list
     filelist = _create_filelist(files)
 
+    # Create zipped model filename
+    model_filename = _make_model_filename(model_name=params["model_name"])
+    body = {"filename": model_filename}
+
     # Check model version description if provided
     description = _check_description(desc=description)
     if description:
         body["description"] = description
-
-    # Create zipped model filename
-    model_filename = _make_model_filename(model_name=params["model_name"])
-    body = {"filename": model_filename}
 
     # Create the zip archive from the filelist
     _zip_archive(name=model_filename, filelist=filelist)
@@ -156,7 +156,7 @@ def upload_version(files, description=None, verbose=True, **kwargs) -> dict:
 
     # Upload the model to storage
     if model_version_res.get("presigned_url"):
-        with open(zip_name, "rb") as data:
+        with open(model_filename, "rb") as data:
             model_data = data.read()
         if verbose:
             print("Started uploading model version to Skafos.", flush=True)

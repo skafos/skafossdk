@@ -9,11 +9,11 @@ def read(fname):
 with open('requirements.txt', 'r') as r:
     REQS = r.read().splitlines()
 
-if "PLUGIN_VERSION" in os.environ:
-    VERSION = os.environ["PLUGIN_VERSION"]
+if "VERSION" in os.environ:
+    VERSION = os.environ["VERSION"]
 else:
-    if "PLUGIN_BUILD_NUMBER" in os.environ:
-        VERSION = read("skafos/VERSION") + ".dev" + os.environ["PLUGIN_BUILD_NUMBER"]
+    if "BUILD_NUMBER" in os.environ:
+        VERSION = read("skafos/VERSION") + ".dev" + os.environ["BUILD_NUMBER"]
     else:
         VERSION = read("skafos/VERSION")
 

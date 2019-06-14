@@ -5,17 +5,16 @@ name: skafossdk
 
 steps:
   - name: publish_stable
-    image: plugins/pypi
-    settings:
-      version: "${DRONE_TAG}"
-      username:
+    image: skafos/python-test:latest
+    environment:
+      VERSION: "${DRONE_TAG}"
+      PYPI_USERNAME:
         from_secret: pypi_username
-      password:
+      PYPI_PASSWORD:
         from_secret: pypi_password
-      distribution:
-        - sdist
-        - bdist_wheel
-      skip_build: false
+    commands:
+      - python setup.py sdist bdist_wheel
+      - twine upload --repository-url https://test.pypi.org/legacy/ dist/* -p $PYPI_PASSWORD -u $PYPI_USERNAME
     when:
       status:
         - success
@@ -24,18 +23,16 @@ steps:
       ref:
         - refs/tags/*
   - name: publish_dev
-    image: plugins/pypi
-    settings:
-      build_number: "${DRONE_BUILD_NUMBER}"
-      repository: "https://test.pypi.org/legacy/"
-      username:
+    image: skafos/python-test:latest
+    environment:
+      BUILD_NUMBER: "${DRONE_BUILD_NUMBER}"
+      PYPI_USERNAME:
         from_secret: pypi_username
-      password:
+      PYPI_PASSWORD:
         from_secret: pypi_password
-      distribution:
-        - sdist
-        - bdist_wheel
-      skip_build: false
+    commands:
+      - python setup.py sdist bdist_wheel
+      - twine upload dist/* -p $PYPI_PASSWORD -u $PYPI_USERNAME
     when:
       status:
         - success

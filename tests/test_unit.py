@@ -9,8 +9,7 @@ import pytest
 import skafos
 from skafos.exceptions import *
 from skafos.http import _generate_required_params
-from skafos.models import upload_version, _create_filelist
-from skafos.models import _make_model_filename, _check_description
+from skafos.models import upload_version, _create_filename, _check_description
 from constants import *
 
 
@@ -41,20 +40,15 @@ class TestUnit(object):
             # Missing model name here should raise an exception
             res = _generate_required_params(PARAMS)
 
-    # Test making a filelist
-    def test_filelist_create(self):
-        test_filelist = _create_filelist(TESTING_FAKE_FILE)
-        assert isinstance(test_filelist, list)
-
     # Test creating a filename
     def test_filename_creation(self):
-        test_model_filename = _make_model_filename(TESTING_FAKE_FILE)
+        test_model_filename = _create_filename(TESTING_FAKE_FILE)
         assert test_model_filename == TESTING_FAKE_FILE + ".zip"
 
     # Test creating a filename that's already got a zip extension
     def test_filename_creation_zip(self):
         testing_fake_file_zip = TESTING_FAKE_FILE + ".zip"
-        test_model_filename = _make_model_filename(testing_fake_file_zip)
+        test_model_filename = _create_filename(testing_fake_file_zip)
         assert test_model_filename == testing_fake_file_zip
 
     # Test an invalid description to make sure error is thrown

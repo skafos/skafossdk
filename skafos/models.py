@@ -1,35 +1,46 @@
 import os
 import json
 import zipfile
+import tempfile
+import shutil
 
 from .http import *
 from .http import _generate_required_params, _http_request
 from .exceptions import *
 
 
+def _validate_files(files):
+    for file in files:
+        if os.path.exists(file):
+            if file.endswith(".zip"):
+                if zipfile.is_zipfile(file):
+                    continue
+                else:
+                    raise InvalidParamError("{} is an invalid zipfile. Can't upload to Skafos.".format(file))
+        else:
+            InvalidParamError("{} file doesn't exist. Can't upload to Skafos.".format(file))
+
+
 def _create_filelist(files):
-    # Create file list
-    if isinstance(files, list):
-        return files
-    elif isinstance(files, str):
-        return [files]
+    # Create file list and perform validation
+    if isinstance(files, str):
+        files = [files]
+    elif isinstance(files, list):
+        pass
     else:
         raise InvalidParamError("Files must be either a list or a string.")
+    # Return validated filelist back to the user
+    _validate_files(files)
+    return files
 
 
-def _make_model_filename(model_name):
+def _create_filename(model_name):
     # Create the name of the zipfile based on the provided model name
     if model_name.endswith(".zip"):
-        model_filename = model_name
+        return model_name
     else:
-        model_filename = "{}.zip".format(model_name)
-    # Check if it already exists
-    if not os.path.exists(model_filename):
-        return model_filename
-    else:
-        raise InvalidParamError("""A file already exists in your working directory
-            with the name {}. In order to not overwrite, you will need to move
-            it and try again!""".format(model_filename))
+        return "{}.zip".format(model_name)
+
 
 def _check_description(desc):
     # Check that the description (if provided) is a valid string
@@ -47,8 +58,11 @@ def _check_description(desc):
 
 
 def _zip_archive(name, filelist):
-    # Zip a list of files together
-    with zipfile.ZipFile(name, "w", zipfile.ZIP_DEFLATED) as skazip:
+    # Create a temp directory
+    tmp_dir_path = tempfile.mkdtemp()
+    model_path = tmp_dir_path + "/" + name
+    # Create a zip archive
+    with zipfile.ZipFile(model_path, "w", zipfile.ZIP_DEFLATED) as skazip:
         for zfile in filelist:
             if os.path.isdir(zfile):
                 for root, dirs, files in os.walk(zfile):
@@ -58,7 +72,8 @@ def _zip_archive(name, filelist):
                 skazip.write(zfile)
             else:
                 raise InvalidParamError("""We were unable to find {}. Check to
-                    make sure that the file path is correct.""".format(zfile))
+                make sure that the file path is correct.""".format(zfile))
+    return model_path
 
 
 def _model_version_meta_data(res):
@@ -126,11 +141,11 @@ def upload_version(files, description=None, verbose=True, **kwargs) -> dict:
     # Generate required connection params
     params = _generate_required_params(kwargs)
 
-    # Generate file list
+    # Generate and validate file list
     filelist = _create_filelist(files)
 
     # Create zipped model filename
-    model_filename = _make_model_filename(model_name=params["model_name"])
+    model_filename = _create_filename(model_name=params["model_name"])
     body = {"filename": model_filename}
 
     # Check model version description if provided
@@ -138,10 +153,15 @@ def upload_version(files, description=None, verbose=True, **kwargs) -> dict:
     if description:
         body["description"] = description
 
-    # Create the zip archive from the filelist
-    _zip_archive(name=model_filename, filelist=filelist)
-    if verbose:
-        print("Created zipped archive to upload to Skafos.", flush=True)
+    # Create the zip archive in a tmp dir by default
+    create_temp_dir = False
+    if (len(filelist) == 1) and (model_filename == filelist[0]):
+        model_path = model_filename
+    else:
+        create_temp_dir = True
+        model_path = _zip_archive(name=model_filename, filelist=filelist)
+        if verbose:
+            print("Created temp dir and zipped archive to upload to Skafos.", flush=True)
 
     # Create a model version record
     endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/".format(**params)
@@ -156,7 +176,7 @@ def upload_version(files, description=None, verbose=True, **kwargs) -> dict:
 
     # Upload the model to storage
     if model_version_res.get("presigned_url"):
-        with open(model_filename, "rb") as data:
+        with open(model_path, "rb") as data:
             model_data = data.read()
         if verbose:
             print("Started uploading model version to Skafos.", flush=True)
@@ -169,10 +189,15 @@ def upload_version(files, description=None, verbose=True, **kwargs) -> dict:
         )
         if verbose:
             print("Finished uploading model version to Skafos.", flush=True)
+        # Remove temporary directory
+        if create_temp_dir:
+            if verbose:
+                print("Removing tmp directory {}".format(model_path))
+            shutil.rmtree(model_path, ignore_errors=True)
     else:
         raise UploadFailedError("Model upload failed.")
 
-    # Update the model version with the file path
+    # Update the model version with the file path in storage
     if upload_res.status_code == 200:
         model_version_endpoint = endpoint + "model_versions/{model_version_id}".format(**model_version_res)
         data = {"filepath": model_version_res["filepath"]}
@@ -248,8 +273,11 @@ def fetch_version(version=None, **kwargs):
     # Get required params
     params = _generate_required_params(kwargs)
 
-    # Check and create filename for the model when it gets downloaded
-    model_filename = _make_model_filename(model_name=params["model_name"])
+    # Create filename for the model when it gets downloaded
+    model_filename = _create_filename(model_name=params["model_name"])
+    if os.path.exists(model_filename):
+        raise InvalidParamError("""You are trying to download a file ({}) that will overwrite an existing file
+        in your current working directory. Rename or move the file and try again.""".format(model_filename))
 
     # Get model version and create endpoint
     endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}".format(**params)

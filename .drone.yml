@@ -14,7 +14,7 @@ steps:
         from_secret: pypi_password
     commands:
       - python setup.py sdist bdist_wheel
-      - 'twine upload --repository-url https://test.pypi.org/legacy/ dist/* -p "${PYPI_PASSWORD}" -u "${PYPI_USERNAME}"'
+      - twine upload --repository-url https://test.pypi.org/legacy/ dist/* -p $PYPI_PASSWORD -u $PYPI_USERNAME
     when:
       status:
         - success
@@ -32,7 +32,7 @@ steps:
         from_secret: pypi_password
     commands:
       - python setup.py sdist bdist_wheel
-      - 'twine upload dist/* -p "${PYPI_PASSWORD}" -u "${PYPI_USERNAME}"'
+      - twine upload dist/* -p $PYPI_PASSWORD -u $PYPI_USERNAME
     when:
       status:
         - success

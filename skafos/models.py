@@ -134,7 +134,7 @@ def upload_version(files, description=None, verbose=True, **kwargs) -> dict:
 
     :raises:
         * `InvalidTokenError` - if improper API token is used or is missing entirely.
-        * `InvalidParamError` - if improper connection params are passed or a zip file exists in your working directory with the same name that Skafos tries to create before upload.
+        * `InvalidParamError` - if improper connection params are passed or missing entirely.
         * `UploadFailedError` - if there's a local network or API related issue.
 
     """

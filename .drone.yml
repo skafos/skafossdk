@@ -40,7 +40,6 @@ steps:
         - push
       branch:
         - master
-        - feature/cleanup-zip
   - name: slack
     image: plugins/slack
     settings:

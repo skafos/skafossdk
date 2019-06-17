@@ -1,6 +1,10 @@
 # Skafos Python SDK
 <img src="https://raw.githubusercontent.com/skafos/skafossdk/master/resources/skafos_mark.jpg" width="50" height="50" align="left"/>
 
+
+[![Build Status](https://drone.skafos.ai/api/badges/skafos/skafossdk/status.svg)](https://drone.skafos.ai/skafos/skafossdk)
+
+
 [Skafos](https://skafos.ai) is the platform for automating the delivery of machine learning models to mobile devices.
 We provide this SDK as a Python wrapper for uploading, fetching, and listing model versions from the platform.
 

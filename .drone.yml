@@ -4,17 +4,39 @@ kind: pipeline
 name: skafossdk
 
 steps:
-  - name: publish_stable
+  - name: test_pr
     image: skafos/python-test:latest
     environment:
-      VERSION: "${DRONE_TAG}"
-      PYPI_USERNAME:
-        from_secret: pypi_username
-      PYPI_PASSWORD:
-        from_secret: pypi_password
+      SKAFOS_TEST_API_TOKEN:
+        from_secret: skafos_test_api_token
     commands:
-      - python setup.py sdist bdist_wheel
-      - twine upload dist/* -p $PYPI_PASSWORD -u $PYPI_USERNAME
+      - python setup.py test
+    when:
+      status:
+        - success
+      event:
+        - pull_request
+  - name: test_dev
+    image: skafos/python-test:latest
+    environment:
+      SKAFOS_TEST_API_TOKEN:
+        from_secret: skafos_test_api_token
+    commands:
+      - python setup.py test
+    when:
+      status:
+        - success
+      event:
+        - push
+      branch:
+        - master
+  - name: test_stable
+    image: skafos/python-test:latest
+    environment:
+      SKAFOS_TEST_API_TOKEN:
+        from_secret: skafos_test_api_token
+    commands:
+      - python setup.py test
     when:
       status:
         - success
@@ -40,6 +62,24 @@ steps:
         - push
       branch:
         - master
+  - name: publish_stable
+    image: skafos/python-test:latest
+    environment:
+      VERSION: "${DRONE_TAG}"
+      PYPI_USERNAME:
+        from_secret: pypi_username
+      PYPI_PASSWORD:
+        from_secret: pypi_password
+    commands:
+      - python setup.py sdist bdist_wheel
+      - twine upload dist/* -p $PYPI_PASSWORD -u $PYPI_USERNAME
+    when:
+      status:
+        - success
+      event:
+        - tag
+      ref:
+        - refs/tags/*
   - name: slack
     image: plugins/slack
     settings:

@@ -47,6 +47,15 @@ class TestIntegration(object):
         assert isinstance(res, list)
         assert len(res) == 0
 
+    def test_list_environment_groups(self):
+        res = models.list_environment_groups(
+            model_name=TESTING_MODEL,
+            **PARAMS
+        )
+        # Check response type and verfiy that at least dev and prod environment groups come back from testing app/model
+        assert isinstance(res, list)
+        assert len(res) >= 2
+
     # Test another token error by using a fake token
     def test_summary_invalid_token(self):
         with pytest.raises(InvalidTokenError):

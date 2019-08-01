@@ -9,7 +9,7 @@ import pytest
 import skafos
 from skafos.exceptions import *
 from skafos.http import _generate_required_params
-from skafos.models import upload_version, _create_filename, _check_description
+from skafos.models import upload_version, _create_filename, _check_description, _check_version, _check_environment
 from constants import *
 
 
@@ -56,6 +56,18 @@ class TestUnit(object):
         test_description = 1234567
         with pytest.raises(InvalidParamError):
             _check_description(test_description)
+
+    # Test an invalid version to make sure error is thrown
+    def test_invalid_version(self):
+        test_version = "1.0"
+        with pytest.raises(InvalidParamError):
+            _check_version(test_version)
+
+    # Test an invalid environment to make sure error is thrown
+    def test_invalid_environment(self):
+        test_environment = 1234
+        with pytest.raises(InvalidParamError):
+            _check_environment(test_environment)
 
     # Test a token error on a summary call with no token
     def test_summary_missing_token(self):

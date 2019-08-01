@@ -1,6 +1,7 @@
 import os
 import requests
 import logging
+import json
 
 from .exceptions import *
 
@@ -92,6 +93,15 @@ def _http_request(method, url, api_token, header=None, timeout=None, payload=Non
                 raise DownloadFailedError("Model version download failed. Check parameters and that a version actually exists for this model.")
             else:
                 raise InvalidParamError("Invalid connection parameters. Check your org name, app name, and model name.")
+        elif response.status_code == 400:
+            if "deploy" in url: 
+                message = json.loads(response.text)
+                if "error" in message: 
+                    raise DeployFailedError("Deploy model version failed. {}.".format(message["error"]))
+                else:
+                    raise DeployFailedError("Deploy model version failed. Check that the version and environment exist for this model.")
+            else: 
+                raise
         else:
             raise
     except requests.exceptions.ConnectionError as err:

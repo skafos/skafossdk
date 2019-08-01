@@ -358,3 +358,85 @@ def list_versions(**kwargs) -> list:
 
     versions = _clean_up_version_list(res)
     return versions
+
+def _check_version(version):
+    if isinstance(version, int) or version == "latest": 
+        return version
+    else:
+        raise InvalidParamError('Model version must be an integer or "latest".')
+
+def _check_environment(environment):
+    if not isinstance(environment, str):
+        raise InvalidParamError('Environment must be a string.')
+    else: 
+        return environment
+
+def deploy_version(version="latest", environment="dev", **kwargs):
+    r"""
+    Deplay a model version for a specific app and model to a given application environment (dev or prod).
+
+    :param version:
+        Version of the model to download or "latest". If unspecified, defaults to the latest version.
+    :type version:
+        str or list
+    :param environment:
+        Application environment (dev or prod) to deliver the model version. If unspecified, defaults to the dev environment.
+    :type environment:
+        str
+    :param \**kwargs:
+        Keyword arguments identifying the organization, app, and model for upload. See below.
+    :return:
+        None
+
+    :Keyword Args:
+        * *skafos_api_token* (``str``) --
+            If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
+        * *org_name* (``str``) --
+            If not provided, it will be read from the environment as `SKAFOS_ORG_NAME`.
+        * *app_name* (``str``) --
+            If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
+        * *model_name* (``str``) --
+            If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
+
+    :Usage:
+    .. sourcecode:: python
+
+       from skafos import models
+
+       # Deploy a model version to Skafos
+       models.deploy_version(
+           skafos_api_token="<your-api-token>",
+           org_name="<your-organization>",
+           app_name="<your-app>",
+           model_name="<your-model>",
+           version=2,
+           environment="prod"
+       )
+
+    :raises:
+        * `InvalidTokenError` - if improper API token is used or is missing entirely.
+        * `InvalidParamError` - if improper connection params are passed or missing entirely.
+        * `DeployFailedError` - if there's a local network or API related issue, or if the model version or environment does not exist.
+
+    """ 
+    params = _generate_required_params(kwargs)
+    version = _check_version(version=version)
+    environment = _check_environment(environment=environment)
+    
+    body = {"version": version, "environment": environment}
+    
+    endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/deploy".format(**params)
+
+    deploy_version_res = _http_request(
+        method="POST",
+        url = API_BASE_URL + endpoint,
+        payload=json.dumps(body),
+        api_token=params["skafos_api_token"]
+    ).json()
+
+    if "success" in deploy_version_res: 
+        success = deploy_version_res["success"]
+        deployed_version = success.split(" ")[-1]
+        print("Successfully deployed model version {}.".format(deployed_version))
+
+    return None

@@ -46,8 +46,7 @@ class TestIntegration(object):
         # Check response type and verfiy that nothing comes back
         assert isinstance(res, list)
         assert len(res) == 0
-
-    # Test a failing deploy due to nonexistent environment
+        
     def test_model_version_deploy(self):
         res = models.deploy_version(
                 model_name=TESTING_MODEL,
@@ -55,6 +54,25 @@ class TestIntegration(object):
             )
 
         assert isinstance(res, type(None))
+        å
+    def test_list_environments(self):
+        res = models.list_environments(
+            model_name=TESTING_MODEL,
+            **PARAMS
+        )
+
+        expected_environments = ["dev", "prod"]
+        found_expected_environments = []
+
+        for environment in res: 
+            env_name = environment['name'].lower()
+            if env_name in expected_environments:
+                found_expected_environments.append(env_name)
+      
+        # Check response type and verfiy that at least dev and prod environment groups come back from testing app/model
+        assert isinstance(res, list)
+        assert len(res) >= 2
+        assert expected_environments.sort() == found_expected_environments.sort()
 
     # Test another token error by using a fake token
     def test_summary_invalid_token(self):

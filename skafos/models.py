@@ -488,6 +488,6 @@ def deploy_version(version="latest", environment="dev", **kwargs):
     if "success" in deploy_version_res:
         success = deploy_version_res["success"]
         deployed_version = success.split(" ")[-1]
-        print("Successfully deployed model version {}.".format(deployed_version))
+        print("Successfully deployed model version {}.".format(deployed_version), flush=True)
 
     return None

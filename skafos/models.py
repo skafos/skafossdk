@@ -358,3 +358,51 @@ def list_versions(**kwargs) -> list:
 
     versions = _clean_up_version_list(res)
     return versions
+
+def list_environments(**kwargs) -> list:
+    r"""
+    Return a list of all available environments based on organization, app name, and model name.
+
+    :param \**kwargs:
+        Keyword arguments identifying the organization, app, and model for version retrieval. See below.
+    :return:
+        List of dictionaries containing model environments available for deployment.
+
+    :Keyword Args:
+        * *skafos_api_token* (``str``) --
+            If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
+        * *org_name* (``str``) --
+            If not provided, it will be read from the environment as `SKAFOS_ORG_NAME`.
+        * *app_name* (``str``) --
+            If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
+        * *model_name* (``str``) --
+            If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
+
+    :Usage:
+    .. sourcecode:: python
+
+       from skafos import models
+
+       # List previously saved model versions
+       models.list_environments(
+           skafos_api_token="<your-api-token>",
+           org_name="<your-organization>",
+           app_name="<your-app>",
+           model_name="<your-model>"
+       )
+
+    :raises:
+        * `InvalidTokenError` - if improper API token is used or is missing entirely.
+        * `InvalidParamError` - if improper connection parameters are passed.
+
+    """
+    params = _generate_required_params(kwargs)
+    endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/environment_groups".format(**params)
+    environments = _http_request(
+        method="GET",
+        url=API_BASE_URL + endpoint,
+        api_token=params["skafos_api_token"]
+    ).json()
+
+    return environments
+        

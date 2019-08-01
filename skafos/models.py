@@ -359,14 +359,14 @@ def list_versions(**kwargs) -> list:
     versions = _clean_up_version_list(res)
     return versions
 
-def list_environment_groups(**kwargs) -> list:
+def list_environments(**kwargs) -> list:
     r"""
-    Return a list of all available environment groups based on organization, app name, and model name.
+    Return a list of all available environments based on organization, app name, and model name.
 
     :param \**kwargs:
         Keyword arguments identifying the organization, app, and model for version retrieval. See below.
     :return:
-        List of dictionaries containing model environments and their groups available to the model for deployment.
+        List of dictionaries containing model environments available for deployment.
 
     :Keyword Args:
         * *skafos_api_token* (``str``) --
@@ -384,7 +384,7 @@ def list_environment_groups(**kwargs) -> list:
        from skafos import models
 
        # List previously saved model versions
-       models.list_environment_groups(
+       models.list_environments(
            skafos_api_token="<your-api-token>",
            org_name="<your-organization>",
            app_name="<your-app>",
@@ -398,11 +398,11 @@ def list_environment_groups(**kwargs) -> list:
     """
     params = _generate_required_params(kwargs)
     endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/environment_groups".format(**params)
-    environment_groups = _http_request(
+    environments = _http_request(
         method="GET",
         url=API_BASE_URL + endpoint,
         api_token=params["skafos_api_token"]
     ).json()
 
-    return environment_groups
+    return environments
         

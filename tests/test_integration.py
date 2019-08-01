@@ -46,7 +46,7 @@ class TestIntegration(object):
         # Check response type and verfiy that nothing comes back
         assert isinstance(res, list)
         assert len(res) == 0
-        
+
     def test_model_version_deploy(self):
         res = models.deploy_version(
                 model_name=TESTING_MODEL,
@@ -54,7 +54,7 @@ class TestIntegration(object):
             )
 
         assert isinstance(res, type(None))
-        å
+
     def test_list_environments(self):
         res = models.list_environments(
             model_name=TESTING_MODEL,

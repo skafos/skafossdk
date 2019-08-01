@@ -32,7 +32,8 @@ discover that information provided you have set an API Token (as described above
 
 This function will output a dictionary that contains all orgs, apps, and models that your API Token has access to.
 
-**Compact Version - **
+**Compact Version**
+
 Running the summary command with `compact=True` will return a nested dictionary that more efficiently
 handles redundant information. However, some users may not find it as easy to work with.
 
@@ -57,7 +58,8 @@ handles redundant information. However, some users may not find it as easy to wo
        }
    }
 
-**Non-Compact Version - **
+**Non-Compact Version**
+
 Setting `compact=False` (default) will return a more robust response as a list of dictionaries. Some users find
 this more convenient because you can copy and paste a single record and pass that as connection parameters to any downstream function.
 *See the section below about using a kwargs dictionary of connection parameters.*

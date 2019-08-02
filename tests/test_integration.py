@@ -47,6 +47,14 @@ class TestIntegration(object):
         assert isinstance(res, list)
         assert len(res) == 0
 
+    def test_model_version_deploy(self):
+        res = models.deploy_version(
+                model_name=TESTING_MODEL,
+                **PARAMS
+            )
+
+        assert isinstance(res, type(None))
+
     def test_list_environments(self):
         res = models.list_environments(
             model_name=TESTING_MODEL,
@@ -71,10 +79,19 @@ class TestIntegration(object):
         with pytest.raises(InvalidTokenError):
             skafos.summary(skafos_api_token=TESTING_FAKE_TOKEN)
 
+    # Test a failing deploy due to nonexistent environment
+    def test_failed_deploy(self):
+        with pytest.raises(DeployFailedError):
+            models.deploy_version(
+                environment="staging",
+                model_name=TESTING_MODEL,
+                **PARAMS
+            )
+
     # Test a failing download due to empty model version
     def test_fetch_failed_download(self):
         with pytest.raises(DownloadFailedError):
-            res = models.fetch_version(
+            models.fetch_version(
                 model_name=TESTING_MODEL_EMPTY,
                 **PARAMS
             )

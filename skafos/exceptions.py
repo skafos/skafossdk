@@ -20,3 +20,7 @@ class DownloadFailedError(Exception):
     """Exception thrown when there is an error while downloading
     a model version from Skafos."""
     pass
+
+class DeployFailedError(Exception):
+    """Exception thrown when there is an error while deploying
+    a model version through Skafos."""

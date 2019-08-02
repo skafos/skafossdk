@@ -14,6 +14,7 @@ following from your Python development environment:
 
 - **Upload a model version**: Save a new version of your machine learning model to the Skafos platform,
 making it available for mobile delivery.
+- **Deploy a model version**: Deliver a saved model version to your mobile application over-the-air.
 - **Fetch a model version**: Download a previously saved version of your machine learning model from
 the Skafos platform.
 - **List model versions**: For each of your apps and models, see what model versions you have previously

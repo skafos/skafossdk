@@ -83,7 +83,7 @@ def _model_version_meta_data(res):
 
 def upload_version(files, description=None, verbose=True, **kwargs) -> dict:
     r"""
-    Upload a model version (one or more files) for a specific app and model to Skafos. All files
+    Upload a model version, belonging to a specific app and model, to Skafos. All files
     are automatically zipped together and uploaded to storage. Once successfully uploaded, a dictionary
     of meta data is returned.
 
@@ -220,7 +220,7 @@ def upload_version(files, description=None, verbose=True, **kwargs) -> dict:
 
 def fetch_version(version=None, **kwargs):
     r"""
-    Download a model version as a zipped archive for a specific app and model from Skafos to your current
+    Download a model version, belonging to a specific app and model, as a zipped archive to your current
     working directory as `<model_name>.zip`.
 
     :param version:
@@ -313,7 +313,7 @@ def _clean_up_version_list(res):
 
 def list_versions(**kwargs) -> list:
     r"""
-    Return a list of all saved model versions based on organization, app name, and model name.
+    Return a list of all saved model versions belonging to an organization, app, and model.
 
     :param \**kwargs:
         Keyword arguments identifying the organization, app, and model for version retrieval. See below.
@@ -359,10 +359,10 @@ def list_versions(**kwargs) -> list:
     versions = _clean_up_version_list(res)
     return versions
 
+
 def list_environments(**kwargs) -> list:
     r"""
-    Return a list of all available environments based on organization, app name, and model name.
-
+    Return a list of all available environments belonging to an organization, app, and model.
     :param \**kwargs:
         Keyword arguments identifying the organization, app, and model for version retrieval. See below.
     :return:
@@ -383,7 +383,7 @@ def list_environments(**kwargs) -> list:
 
        from skafos import models
 
-       # List previously saved model versions
+       # List avilable environments for a model
        models.list_environments(
            skafos_api_token="<your-api-token>",
            org_name="<your-organization>",
@@ -394,7 +394,6 @@ def list_environments(**kwargs) -> list:
     :raises:
         * `InvalidTokenError` - if improper API token is used or is missing entirely.
         * `InvalidParamError` - if improper connection parameters are passed.
-
     """
     params = _generate_required_params(kwargs)
     endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/environment_groups".format(**params)
@@ -405,4 +404,90 @@ def list_environments(**kwargs) -> list:
     ).json()
 
     return environments
-        
+
+
+def _check_version(version):
+    if isinstance(version, int) or version == "latest":
+        return version
+    else:
+        raise InvalidParamError('Model version must be an integer or "latest".')
+
+
+def _check_environment(environment):
+    if not isinstance(environment, str):
+        raise InvalidParamError('Environment must be a string.')
+    else:
+        return environment
+
+
+def deploy_version(version="latest", environment="dev", **kwargs):
+    r"""
+    Deploy a model version for a specific app and model to a given application environment (dev or prod).
+
+    .. note:: You can only deploy a model version that has been uploaded to Skafos already.
+
+    :param version:
+        Version of the model to download or "latest". If unspecified, defaults to the latest version.
+    :type version:
+        str or list
+    :param environment:
+        Application environment (dev or prod) to deliver the model version. If unspecified, defaults to the dev environment.
+    :type environment:
+        str
+    :param \**kwargs:
+        Keyword arguments identifying the organization, app, and model for deployment. See below.
+    :return:
+        None
+
+    :Keyword Args:
+    * *skafos_api_token* (``str``) --
+        If not provided, it will be read from the environment as `SKAFOS_API_TOKEN`.
+    * *org_name* (``str``) --
+        If not provided, it will be read from the environment as `SKAFOS_ORG_NAME`.
+    * *app_name* (``str``) --
+        If not provided, it will be read from the environment as `SKAFOS_APP_NAME`.
+    * *model_name* (``str``) --
+        If not provided, it will be read from the environment as `SKAFOS_MODEL_NAME`.
+
+    :Usage:
+    .. sourcecode:: python
+
+       from skafos import models
+
+       # Deploy a model version to Skafos
+       models.deploy_version(
+           skafos_api_token="<your-api-token>",
+           org_name="<your-organization>",
+           app_name="<your-app>",
+           model_name="<your-model>",
+           version=2,
+           environment="prod"
+        )
+
+    :raises:
+    * `InvalidTokenError` - if improper API token is used or is missing entirely.
+    * `InvalidParamError` - if improper connection params are passed or missing entirely.
+    * `DeployFailedError` - if there's a local network or API related issue, or if the model version or environment does not exist.
+    """
+    # Get and check required parameters
+    params = _generate_required_params(kwargs)
+    version = _check_version(version=version)
+    environment = _check_environment(environment=environment)
+
+    body = {"version": version, "environment": environment}
+
+    endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/deploy".format(**params)
+
+    deploy_version_res = _http_request(
+        method="POST",
+        url = API_BASE_URL + endpoint,
+        payload=json.dumps(body),
+        api_token=params["skafos_api_token"]
+    ).json()
+
+    if "success" in deploy_version_res:
+        success = deploy_version_res["success"]
+        deployed_version = success.split(" ")[-1]
+        print("Successfully deployed model version {}.".format(deployed_version), flush=True)
+
+    return None

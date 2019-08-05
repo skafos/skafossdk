@@ -412,7 +412,7 @@ def list_environments(**kwargs) -> list:
         * `InvalidParamError` - if improper connection parameters are passed.
     """
     params = _generate_required_params(kwargs)
-    endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/environment_groups".format(**params)
+    endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/environment_groups?with_device_count=true".format(**params)
     res = _http_request(
         method="GET",
         url=API_BASE_URL + endpoint,

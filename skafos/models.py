@@ -359,6 +359,22 @@ def list_versions(**kwargs) -> list:
     versions = _clean_up_version_list(res)
     return versions
 
+def _clean_up_environments_list(res):
+    environments = []
+    for env in res:
+        environment = {}
+        for k, v in env.items():
+            if isinstance(v, list):
+                model_groups = []
+                for g in v:
+                    group = {i: g[i] for i in g.keys() if not i.endswith("id")}
+                    model_groups.append(group)
+                environment[k] = model_groups
+            elif not k.endswith("id"):
+                environment[k] = v
+        environments.append(environment)
+    return environments
+
 
 def list_environments(**kwargs) -> list:
     r"""
@@ -397,11 +413,14 @@ def list_environments(**kwargs) -> list:
     """
     params = _generate_required_params(kwargs)
     endpoint = "/organizations/{org_name}/apps/{app_name}/models/{model_name}/environment_groups".format(**params)
-    environments = _http_request(
+    res = _http_request(
         method="GET",
         url=API_BASE_URL + endpoint,
         api_token=params["skafos_api_token"]
     ).json()
+
+
+    environments = _clean_up_environments_list(res)
 
     return environments
 
